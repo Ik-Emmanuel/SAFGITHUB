@@ -1,0 +1,238 @@
+{%  extends "layout.html" %}
+
+{%  block content  %}
+        
+
+<!-- <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="https://pixinvent.com/stack-responsive-bootstrap-4-admin-template/app-assets/css/bootstrap-extended.min.css">
+<link rel="stylesheet" type="text/css" href="https://pixinvent.com/stack-responsive-bootstrap-4-admin-template/app-assets/fonts/simple-line-icons/style.min.css">
+<link rel="stylesheet" type="text/css" href="https://pixinvent.com/stack-responsive-bootstrap-4-admin-template/app-assets/css/colors.min.css">
+<link rel="stylesheet" type="text/css" href="https://pixinvent.com/stack-responsive-bootstrap-4-admin-template/app-assets/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+<style> -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;1,500&display=swap">
+
+  <script>
+
+
+    window.addEventListener("load", function () {
+        const loader = document.querySelector(".loader");
+        loader.className += " hidden"; // class "loader hidden"
+    });
+
+
+
+    $('a').click(function(e) {
+    $('<div class=loader>loading...</div>').prependTo(document.body); 
+    e.preventDefault();
+    var destination = this.href;
+    setTimeout(function() {
+        window.location = destination;
+    },1000);
+    $('<iframe>').hide().appendTo('body').load(function() {
+        window.location = destination;
+    }).attr('src', destination);
+});
+
+
+
+
+
+
+
+    $('a').click(function(){
+  
+});
+    </script>
+
+
+<style>
+.grey-bg {  
+    background-color: #F5F7FA;
+}
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900');
+
+div.list-group {
+
+  max-width:900px;
+            max-height: 130vh;
+            
+           
+             text-align: left;
+             overflow: auto;
+       
+
+
+
+
+}
+
+
+body{
+    font-family: 'Roboto', sans-serif;
+}
+
+.ticker-wrapper{
+  position: relative;
+  max-width: 800px;
+  margin: auto;
+ 
+
+}
+
+.bigHeading{
+display: block;
+position: absolute;
+font-style: italic;
+font-size: 25px;
+background-color: #212729;
+color: #fff;
+text-transform: uppercase;
+padding: 6.8px;
+letter-spacing: 1px;
+font-weight: 100;
+z-index: 2;
+
+}
+
+.bigHeading::after,
+.bigHeading::before{
+  content:'';
+  width: 0;
+  position: absolute;
+  border-width: 50px;
+  border-style: solid;
+  top: 0;
+  z-index: -1;
+}
+
+.bigHeading::before{
+  border-color: #212729 transparent transparent
+  transparent ;
+  right: -51px;
+
+}
+
+.bigHeading::after{
+  border-color:  transparent  transparent #212729 
+  transparent  ;
+  left: -50px;
+  top: -49px;
+
+}
+
+
+.text-update{
+  height:53px;
+  padding-top: 0.5em;
+
+  background: #0051ff10;
+  overflow: hidden;
+  position: relative;
+  color: rgb(0, 0, 0);
+  
+  letter-spacing: 1px;
+  font-size: 20px;
+  font-weight: 500;
+  display: flex;
+ 
+  left: 125px;
+  
+  white-space: nowrap;
+}
+
+.text-update marquee{
+position: absolute;
+width: 150%;
+margin: 0;
+font-weight: 700;
+text-align: left;
+
+
+
+
+}
+
+
+#page-loader {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    display: none;
+    text-align: center;
+    width: 100%;
+
+    padding-left: 8em;
+    background-color: rgba(255, 255, 255, 0); 
+}
+
+
+
+
+
+
+.com-icon{
+      margin-bottom: .35em;
+      color: #ec1616;
+    }
+
+   
+    div.grey-bg {
+position: relative;
+max-height: 100vh;
+overflow: auto;
+
+            
+} 
+
+
+</style> 
+
+
+
+<div class="grey-bg container-fluid" style="text-align: center;">
+  <section id="minimal-statistics">
+    <div class="row">
+      <div class="col-12 mt-3 mb-1">
+       <h3 class="text-uppercase text-right" style="padding-right: 1em;">     <img  style="height: 40px; width: 50px; float: left;" src="https://azermstorage.blob.core.windows.net/appimages/facebook.png" alt="logo" class="logo"><b  style="float: left; color: black; font-family: Poppins, sans-serif;">Facebook Trend Analysis</b>    </h3> <br>  
+       
+      </div>
+    </div>
+
+   
+   
+<br> <br>
+     
+  
+
+          
+          <div class="card-deck mb-1 text-center" style="font-family: Poppins, sans-serif;"  >
+            
+
+            <div class="col-md-12 col-lg-12 column"  >
+              <div class="card gr-1" style = "border-radius: 30px; box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.596);font-family: Poppins, sans-serif;">
+                <div class="txt" style="text-align: center; background-image:linear-gradient(rgba(255, 255, 255, 0.055), rgba(252, 252, 252, 0.034)),  url(https://azermstorage.blob.core.windows.net/appimages/pat4.png); background-size: 970px; border-radius: 30px; box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.596);font-family: Poppins, sans-serif;">
+                  <br> <br> <br> <img  style="height: 197px; width: 290px; padding-left: 2em;" src="https://azermstorage.blob.core.windows.net/appimages/facebook.png" alt="logo" class="logo">
+                 <br> <br> <h1> <b style="color: black;"> Coming Soon</b></h1>
+                  <p style="color: black;">Facebook trend analysis  will soon be added</p> <br> <br> 
+                </div>
+              
+               
+              </div>
+            </div> 
+          </div>
+       
+
+
+
+
+
+
+
+
+          
+            
+{%  endblock  %}

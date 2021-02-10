@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    {% block title %}
+
+    {% endblock %}
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link href="https://azermstorage.blob.core.windows.net/appimages/favicon.png" rel="icon">
+
+    <title>SRMS</title>
+
+    <!-- Custom fonts for this template-->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+    <link href="static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+   
+    <link href="static/css/sb-admin-2.min.css" rel="stylesheet">
+
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v9.0" nonce="lsAZypNW"></script>
+    <script type="text/javascript">
+
+        function picture(){ 
+         document.getElementById('loadpic').style.display='block';
+
+        }
+
+
+    </script>
+
+
+
+    <style>
+
+
+a {
+ text-decoration: none;
+ color: black;
+}
+    </style>
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient sidebar sidebar-dark accordion" id="accordionSidebar"  style=" background: #212729;  background-image: url(https://azermstorage.blob.core.windows.net/appimages/bdp.png); background-size: 20em; font-family: Poppins, sans-serif; color: white;"  >
+
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url_for ('index') }}"   onclick="picture()">
+                <div class="sidebar-brand-icon rotate-n-15">
+                    <img src="https://azermstorage.blob.core.windows.net/appimages/log2.png"  style=" width: 45px; height: 45px; transform: rotate(15deg) "  alt="">
+                </div>
+                <div class="sidebar-brand-text mx-3"> <br> <h6 style="font-size:2vw; text-shadow: 1px 1px 1px #000, 
+                    3px 3px 5px rgb(0, 0, 0);re"> SRMS </h6> </div>
+            </a>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
+
+            <!-- Nav Item - Dashboard -->
+            <li class="nav-item ">
+                <a class="nav-link" href="{{ url_for ('index') }} "  onclick="picture()"  style="text-decoration: none;">
+                    <img  style="height: 20px; width: 35px;" src="static/home2.png" alt="logo" class="logo">
+                    <span> <b style="text-shadow: 1px 1px 1px #000, 
+                        3px 3px 5px rgb(0, 0, 0); color: white; "> Home</b></span></a>
+            </li>
+
+
+
+            <li class="nav-item ">
+                <a class="nav-link" href="{{ url_for ('brand') }} "  style="text-decoration: none;"  onclick="picture()">
+                    <img  style="height: 20px; width: 20px" src="static/brand.png" alt="logo" class="logo">
+                    <span> <b style="text-shadow: 1px 1px 1px #000, 
+                        3px 3px 5px rgb(0, 0, 0); color: white;" > Brand Performance</b></span></a>
+            </li>    
+
+            <li class="nav-item ">
+                <a class="nav-link" href="{{ url_for ('comp') }}"  onclick="picture()" style="text-decoration: none;">
+                    <img  style="height: 20px; width: 20px;" src="static/compy.png" alt="logo" class="logo">
+                    <span> <b style="text-shadow: 1px 1px 1px #000, 
+                        3px 3px 5px rgb(0, 0, 0); color: white;">Competitor Analysis</b> </span></a>
+            </li> 
+          
+            
+     <!-- Divider -->
+     <hr class="sidebar-divider">
+            <!-- Nav Item - Pages Collapse Menu -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+                    aria-expanded="true" aria-controls="collapseTwo" style="text-decoration: none;">
+                    <img  style="height: 23px; width: 29px;" src="static/network.png" alt="logo" class="logo">
+                    <span> <b style="text-shadow: 1px 1px 1px #000, 
+                        3px 3px 5px rgb(0, 0, 0); color: white;"> Platforms</b></span>
+                </a>
+                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded" style=" background-image:linear-gradient(rgba(248, 246, 246, 0.212), rgba(247, 241, 241, 0.973)),  url(https://azermstorage.blob.core.windows.net/appimages/pat3.png); background-size: 500px;">
+                      
+                        <a class="collapse-item" href="{{ url_for ('platformall') }}"  onclick="picture()" >  <b>  <img  style="height: 20px; width: 25px;" src="static/plat.png" alt="logo" class="logo"> All Platforms</b></a>
+                        <a class="collapse-item" href="{{ url_for ('fbplatform') }}"  onclick="picture()" ><b >  <img  style="height: 20px; width: 25px;" src="static/facebook.png" alt="logo" class="logo"> Facebook</b></a>
+                        <a class="collapse-item" href="{{ url_for ('twitterplatform') }}"  onclick="picture()"><b >  <img  style="height: 20px; width: 25px;" src="static/twitter.png" alt="logo" class="logo"> Twitter</b></a>
+                        <a class="collapse-item" href="{{ url_for ('igplatform') }}" onclick="picture()" > <b >  <img  style="height: 20px; width: 20px;" src="static/insta.png" alt="logo" class="logo"> Instagram</b></a>
+                        <a class="collapse-item" href="{{ url_for ('linkedinplatform') }}" onclick="picture()" > <b >  <img  style="height: 20px; width: 20px;" src="static/link.png" alt="logo" class="logo"> Linkedin</b></a>
+                        <a class="collapse-item" href="{{ url_for ('nlplatform') }}" onclick="picture()" > <b >   <img  style="height: 20px; width: 25px;" src="static/n2.png" alt="logo" class="logo">Nairaland</b></a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Nav Item - Utilities Collapse Menu -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+                    aria-expanded="true" aria-controls="collapseUtilities" style="text-decoration: none;" >
+                    <img  style="height: 25px; width: 25px;" src="static/product.png" alt="logo" class="logo">
+                    <span> <b style="text-shadow: 1px 1px 1px #000, 
+                        3px 3px 5px rgb(0, 0, 0); color: white;"> Product Lines</b></span>
+                </a>
+                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+                    data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded" style=" background-image:linear-gradient(rgba(255, 255, 255, 0.418), rgba(255, 255, 255, 0.973)),  url(https://azermstorage.blob.core.windows.net/appimages/pat3.png); background-size: 600px;">
+                        <a class="collapse-item" href="{{ url_for ('specta') }}" onclick="picture()"><b> Altpower</b></a>
+                      
+                        <a class="collapse-item" href="{{ url_for ('iinvest') }}" onclick="picture()"><b > Altpay</b></a>
+                        <a class="collapse-item" href="{{ url_for ('onebank') }}" onclick="picture()"><b > Altmall</b></a>
+                        <a class="collapse-item" href="{{ url_for ('onepay') }}" onclick="picture()"><b > Altdrive</b></a>
+                     
+                    </div>
+                </div>
+            </li>
+
+             <!-- Divider -->
+             <hr class="sidebar-divider d-none d-md-block"> 
+
+          <!-- Nav Item - Dashboard -->
+       
+          {% if session['is_admin']  %}
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
+                aria-expanded="true" aria-controls="collapsePages">
+                <img  style="height: 20px; width: 20px;" src="static/access.png" alt="logo" class="logo">
+                <span> <b style="color: white;text-shadow: 1px 1px 1px #000, 
+                    3px 3px 5px rgb(0, 0, 0);"> Access Requests</b></span>
+            </a>
+            <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded" style=" background-image:linear-gradient(rgba(255, 255, 255, 0.418), rgba(255, 255, 255, 0.973)),  url(https://azermstorage.blob.core.windows.net/appimages/pat4.png); background-size: 500px;">
+                    {% if session['is_admin']  %}
+                    <a class="collapse-item" href="{{ url_for ('signuprequest') }}" onclick="picture()"> <b>  User Access Request</b></a>
+                    {% endif %}
+                    {% if session['is_super_admin'] %}
+                    <a class="collapse-item" href="{{ url_for ('adminrequest') }}" onclick="picture()"><b > User Admin Request</b></a>
+                    {% endif %}
+                </div>
+            </div>
+        </li> 
+        {% endif %}
+       
+    
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePagess"
+                aria-expanded="true" aria-controls="collapsePagess">
+                <img  style="height: 20px; width: 20px;" src="static/feedback2.png" alt="logo" class="logo">
+                <span> <b style="color: white;text-shadow: 1px 1px 1px #000, 
+                    3px 3px 5px rgb(0, 0, 0);"> Reports & Feedback</b></span>
+            </a>
+            <div id="collapsePagess" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded" style=" background-image:linear-gradient(rgba(255, 255, 255, 0.418), rgba(255, 255, 255, 0.973)),  url(https://azermstorage.blob.core.windows.net/appimages/pat3.png); background-size: 500px;">
+                    {% if session['is_admin']  %}
+                    <a class="collapse-item" href="{{ url_for ('report') }}" onclick="picture()"> <b> Generate Report</b></a>
+                    {% endif %}
+                   
+                    <a class="collapse-item" href="{{ url_for ('feedback') }}" onclick="picture()"><b >Send Feedback</b></a>
+          
+                </div>
+            </div>
+        </li>
+
+ <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+           
+
+            <!-- Sidebar Toggler (Sidebar) -->
+            <div class="text-center d-none d-md-inline" >
+                <button class="rounded-circle border-0" style="background-color: rgb(255, 38, 38);" id="sidebarToggle"></button>
+            <br> 
+            </div>
+
+            <!-- Sidebar Message -->
+            <!-- <div class="sidebar-card">
+                <img class="sidebar-card-illustration mb-2" src="img/undraw_rocket.svg" alt="">
+                <p class="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>
+                <a class="btn btn-success btn-sm" href="https://startbootstrap.com/theme/sb-admin-pro">Upgrade to Pro!</a>
+            </div> --> 
+            <div style="justify-content: center; display: flex;">
+               <br><br>  <img  style="  height: 2vw; width: 4vw;" src='static/dataoffice.png' alt=""> <br></p>
+              <br>
+             </div>
+             
+        </ul>
+
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                {% include  'topbar.html'  %}
+              
+             
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                       
+                            <div class="alert alert-{{category}}" style="border-radius: 40px; background-color: rgba(0, 255, 106, 0.164); color: black; padding: 8px 10px; text-align: center;">
+                                <img  style="height: 33px; width: 33px; float: left;" src="https://azermstorage.blob.core.windows.net/appimages/green.png" alt="logo" class="logo">   <p> <b> {{ message }}</b></p>
+                            </div>
+                       
+                       
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+                {% block content  %}
+
+              
+              
+              
+              
+              
+                {% endblock %}
+
+
+
+
+                
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+         
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document" style="font-family: Poppins, sans-serif; color: rgb(0, 0, 0);">
+            <div class="modal-content">
+                <div class="modal-header">
+                    
+                    <h6 class="modal-title" id="exampleModalLabel"><b> Ready to Leave?</b></h6>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Select <b>"Logout"</b>  below to end your session or <b> "Cancel"</b>  to go back.</div>
+                
+                <div class="modal-footer">
+                    <img style="  float: left;  height: 4vw; width: 8vw;" src="https://azermstorage.blob.core.windows.net/appimages/altng.png" alt="logo" class="logo"> 
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal" >Cancel</button>
+                    <a class="btn btn-primary" href="{{ url_for ('signout') }}" style="background-color: red;">Logout</a> 
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="static/vendor/jquery/jquery.min.js"></script>
+    <script src="static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    
+    <script src="static/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="static/js/sb-admin-2.min.js"></script>
+
+    <!-- Page level plugins -->
+   
+    <script src="static/vendor/chart.js/Chart.min.js"></script>
+
+    <!-- Page level custom scripts -->
+   
+    <script src="static/js/demo/chart-area-demo.js"></script>
+    
+    <script src="static/js/demo/chart-pie-demo.js"></script>
+
+
+
+
+ <!-- Core plugin JavaScript-->
+
+
+ <!-- Custom scripts for all pages-->
+
+
+ <!-- Page level plugins -->
+
+
+ <script src="static/vendor/datatables/jquery.dataTables.min.js"></script>
+
+ <script src="static/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+      <!-- Page level custom scripts -->
+      <script src="static/js/demo/datatables-demo.js"></script>
+
+</body>
+
+
+
+{% block underbody %}
+
+{% endblock %}
+
+</html>

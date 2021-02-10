@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>SRMS </title>
+  <link href="https://azermstorage.blob.core.windows.net/appimages/favicon.png" rel="icon">
+  <link href="https://fonts.googleapis.com/css?family=Karla:400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.materialdesignicons.com/4.8.95/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <!-- <link rel="stylesheet" href="static/css/login.css"> -->
+
+
+  <script>
+
+
+    window.addEventListener("load", function () {
+        const loader = document.querySelector(".loader");
+        loader.className += " hidden"; // class "loader hidden"
+    });
+
+
+
+    $('a').click(function(e) {
+    $('<div class=loader>loading...</div>').prependTo(document.body); 
+    e.preventDefault();
+    var destination = this.href;
+    setTimeout(function() {
+        window.location = destination;
+    },1000);
+    $('<iframe>').hide().appendTo('body').load(function() {
+        window.location = destination;
+    }).attr('src', destination);
+});
+
+
+
+
+
+
+
+    $('a').click(function(){
+  
+});
+
+
+var password = document.getElementById("password")
+  , confirm_password = document.getElementById("confirm_password");
+
+function validatePassword(){
+  if(password.value != confirm_password.value) {
+    confirm_password.setCustomValidity("Passwords Don't Match");
+  } else {
+    confirm_password.setCustomValidity('');
+  }
+}
+
+password.onchange = validatePassword;
+confirm_password.onkeyup = validatePassword;
+</script>
+
+
+<style>
+
+
+
+#page-loader {
+    
+  
+    z-index: 10000;
+    display: none;
+    text-align: center;
+    width: 100%;
+
+  
+    background-color: rgba(255, 255, 255, 0); 
+}
+
+
+body {
+  font-family: "Karla", sans-serif;
+  background-color: #61616177;
+  min-height: 98vh; }
+
+.brand-wrapper {
+  margin-bottom: 19px; }
+  .brand-wrapper .logo {
+    height: 37px; }
+
+.login-card {
+  border: 0;
+  border-radius: 27.5px;
+  box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.74);
+  overflow: hidden; }
+  .login-card-img {
+    border-radius: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -o-object-fit: cover;
+       object-fit: cover; }
+  .login-card .card-body {
+    padding: 25px 20px 20px; }
+    @media (max-width: 222px) {
+      .login-card .card-body {
+        padding: 35px 24px; } }
+  .login-card-description {
+    font-size: 25px;
+    color: #000;
+    font-weight: normal;
+    margin-bottom: 23px; }
+  .login-card form {
+    max-width: 326px; }
+  .login-card .form-control {
+    border: 1px solid #d5dae2;
+    padding: 15px 25px;
+    margin-bottom: 20px;
+    min-height: 45px;
+    font-size: 13px;
+    line-height: 15;
+    font-weight: normal; }
+    .login-card .form-control::-webkit-input-placeholder {
+      color: #919aa3; }
+    .login-card .form-control::-moz-placeholder {
+      color: #919aa3; }
+    .login-card .form-control:-ms-input-placeholder {
+      color: #919aa3; }
+    .login-card .form-control::-ms-input-placeholder {
+      color: #919aa3; }
+    .login-card .form-control::placeholder {
+      color: #919aa3; }
+  .login-card .login-btn {
+    padding: 13px 20px 12px;
+    background-color: #000;
+    border-radius: 4px;
+    font-size: 17px;
+    font-weight: bold;
+    line-height: 20px;
+    color: #fff;
+    margin-bottom: 24px; }
+    .login-card .login-btn:hover {
+      border: 1px solid #000;
+      background-color: transparent;
+      color: #000; }
+  .login-card .forgot-password-link {
+    font-size: 14px;
+    color: #919aa3;
+    margin-bottom: 12px; }
+  .login-card-footer-text {
+    font-size: 16px;
+    color: #0d2366;
+    margin-bottom: 60px; }
+    @media (max-width: 767px) {
+      .login-card-footer-text {
+        margin-bottom: 24px; } }
+  .login-card-footer-nav a {
+    font-size: 14px;
+    color: #919aa3; }
+
+/*# sourceMappingURL=login.css.map */
+
+.login-box {
+    width: 100%;
+    margin: auto;
+
+    min-height: 70vh;
+         box-shadow: 0 12px 15px 0 rgba(0, 0, 0, .24), 0 17px 50px 0 rgba(0, 0, 0, .19)
+}
+
+.login-snip {
+    width: 100%;
+    height: 100%;
+    text-shadow: 0.5px 0.5px 0.5px #000000;
+
+    
+    
+}
+
+.login-snip .login,
+.login-snip .sign-up-form {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+    transform: rotateY(180deg);
+    backface-visibility: hidden;
+    transition: all .4s linear
+}
+
+.login-snip .sign-in,
+.login-snip .sign-up,
+.login-space .group .check {
+    display: none
+}
+
+.login-snip .tab,
+.login-space .group .label,
+.login-space .group .button {
+    text-transform: uppercase
+}
+
+.login-snip .tab {
+    font-size: 20px;
+    margin-right: 15px;
+    padding-bottom: 5px;
+    margin: 0 15px 10px 0;
+    display: inline-block;
+    border-bottom: 2px solid transparent
+}
+
+.login-snip .sign-in:checked+.tab,
+.login-snip .sign-up:checked+.tab {
+    color: #fff;
+    border-color: #212729;
+    text-shadow: 0.5px 0.5px 0.5px #000000;
+}
+
+.login-space {
+    min-height: 345px;
+    position: relative;
+    perspective: 1000px;
+    transform-style: preserve-3d
+}
+
+.login-space .group {
+    margin-bottom: 15px
+}
+
+.login-space .group .label,
+.login-space .group .input,
+.login-space .group .button {
+    width: 100%;
+    color: #fff;
+    display: block
+}
+
+.login-space .group .input,
+.login-space .group .button {
+    border: none;
+    padding: 10px 15px;
+    width: 85%;
+    border-radius: 25px;
+    background: rgb(255, 255, 255)
+}
+
+.login-space .group input[data-type="password"] {
+    text-security: circle;
+    -webkit-text-security: circle
+}
+
+.login-space .group .label {
+    color: #aaa;
+    font-size: 12px
+}
+
+.login-space .group .button {
+    background: #212729;
+}
+
+
+.login-space .group .button:hover {
+  
+    background-image:   linear-gradient(-49deg, #222224fb  20%, #81cdf136 100%);
+    background-repeat: repeat-y;
+    background-size: 18em;
+}
+
+.login-space .group label .icon {
+    width: 15px;
+    height: 15px;
+    border-radius: 20px;
+    position: relative;
+    display: inline-block;
+    background: rgba(255, 255, 255, .1)
+}
+
+.login-space .group label .icon:before,
+.login-space .group label .icon:after {
+    content: '';
+    width: 10px;
+    height: 2px;
+    background: #fff;
+    position: absolute;
+    transition: all .2s ease-in-out 0s
+}
+
+.login-space .group label .icon:before {
+    left: 3px;
+    width: 5px;
+    bottom: 6px;
+    transform: scale(0) rotate(0)
+}
+
+.login-space .group label .icon:after {
+    top: 6px;
+    right: 0;
+    transform: scale(0) rotate(0)
+}
+
+.login-space .group .check:checked+label {
+    color: #fff
+}
+
+.login-space .group .check:checked+label .icon {
+    background: #212729;
+}
+
+.login-space .group .check:checked+label .icon:before {
+    transform: scale(1) rotate(45deg)
+}
+
+.login-space .group .check:checked+label .icon:after {
+    transform: scale(1) rotate(-45deg)
+}
+
+.login-snip .sign-in:checked+.tab+.sign-up+.tab+.login-space .login {
+    transform: rotate(0)
+}
+
+.login-snip .sign-up:checked+.tab+.login-space .sign-up-form {
+    transform: rotate(0)
+}
+
+*,
+:after,
+:before {
+    box-sizing: border-box
+}
+
+.clearfix:after,
+.clearfix:before {
+    content: '';
+    display: table
+}
+
+.clearfix:after {
+    clear: both;
+    display: block
+}
+
+a {
+    color: inherit;
+    text-decoration: none
+}
+
+.hr {
+    height: 2px;
+    margin: 60px 0 50px 0;
+    background: rgba(255, 255, 255, .2)
+}
+
+.foot {
+    text-align: center
+}
+
+
+
+::placeholder {
+    color: #000000
+}
+
+
+
+
+
+</style>
+
+
+
+</head>
+<body>
+  <main class="d-flex align-items-center min-vh-100 py-3 py-md-0" >
+    <div class="container">
+      <div class="card login-card" >
+        <div class="row no-gutters">
+         
+          <div class="col-md-5" style="background: #1f2425cb; background-image: url(https://azermstorage.blob.core.windows.net/appimages/g3.png); background-size: 30em;">
+            <div class="card-body">
+                 <h3 style="color: white; text-align: center; text-shadow: 3px 3px 4px #000000;"> 
+                    <div class="brand-wrapper"> 
+                        <img src="https://azermstorage.blob.core.windows.net/appimages/log2.png" style=" height: 90px; width: 90px; position: center;" alt="logo" class="logo">
+                      </div>SAF REPUTATION <br> MANAGEMENT SYSTEM <br> <b style=" color: rgb(197, 10, 10);
+                      text-shadow: 2.5px 2.5px 2px #000000;">(SRMS) </b></h3>
+             <div class="login-box" style="border-radius: 40px; background-image:linear-gradient(rgba(53, 52, 52, 0.548), rgba(22, 21, 21, 0.055)),   "> <br> <br>
+              {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                  {% for category, message in messages %}
+                      <div class="container">
+                          <div class="alert alert-{{category}} " style="border-radius: 40px; {% if category== "success" %} background-color: rgba(0, 255, 179, 0.685); {% elif category=="danger" %} background-color: rgba(253, 4, 4, 0.404);  {% endif %} color: rgb(3, 3, 3);">
+                           {% if category== "success" %} <img  style="height: 33px; width: 33px; float: left;" src="https://azermstorage.blob.core.windows.net/appimages/green.png" alt="logo" class="logo">  {% elif category=="danger" %} 
+                           <img  style="height: 33px; width: 33px; float: left;" src="https://azermstorage.blob.core.windows.net/appimages/redx.png" alt="logo" class="logo"> {% endif %} <p>{{ message }}</p>
+                          </div>
+                      </div>
+                     
+                  {% endfor %}
+              {% endif %}
+          {% endwith %}
+
+          <div id="page-loader" style="position: relative;padding-left: 1%;">
+           
+            
+                <img style="height: 33px; width: 33px;" src="https://azermstorage.blob.core.windows.net/appimages/load1.gif" alt="loader">
+            
+            </div> 
+       
+            <div class="login-snip" style="padding-left: 1.5em;"> <input id="tab-1" type="radio" name="tab" class="sign-in" checked><label for="tab-1" class="tab"> <b > Login</b></label> <input id="tab-2" type="radio" name="tab" class="sign-up"><label for="tab-2" class="tab"> <b> Sign Up</b></label>
+              <div class="login-space">
+                <form method="POST", action="/loginny">
+                  <div class="login"> <br> <br> 
+                      <div class="group">  <input id="user" type="text" class="input" name="email" placeholder="Enter your Email Address" required="required" style="color: black;"> </div>
+                      <div class="group"> <input id="pass" type="password" class="input" name="password" data-type="password" placeholder="Enter your password" required="required" style="color: black;" > </div>
+                      
+                      <div class="group">  <input type="submit" class="button" value="Sign In" onclick="javascript:document.getElementById('page-loader').style.display='block';"> </div>
+                    </div>
+
+                  </form>
+
+                  <form method="POST", action="/signup">
+                  <div class="sign-up-form">
+                      <div class="group">  <input id="user" type="text" class="input" placeholder="Enter Firstname" name="first_name" required="required" style="color: black;">  </div>
+                      <div class="group">  <input id="user" type="text" class="input" placeholder="Enter Lastname" name="last_name" required="required" style="color: black;"> </div>
+                      <div class="group">  <input id="pass" type="text" class="input" placeholder="Enter your email address" name="email" required="required" style="color: black;"> </div>
+                      <div class="group">  <input id="password" type="password" class="input" data-type="password" placeholder="Create your password" name="password" required="required" style="color: black;"> </div>
+                      <div class="group">  <input id="confirm_password" type="password" class="input" data-type="password" placeholder="Confirm your password" name="password_confirm" required="required" style="color: black;"> </div>
+                       <div class="group"> <input type="submit" class="button" value="Sign Up"  onclick="javascript:document.getElementById('page-loader').style.display='block';"> </div>
+                  
+                  </div>
+                </form>
+              </div>
+          </div>
+        </div>     
+            </div>
+          </div>
+          
+          <div class="col-md-7">  
+         
+            <div class="container" style="padding-top: 3em;">
+            
+            <img style="height: 630px; width: 650px;  padding-left: 1.7em; padding-top: 0em;" src="https://azermstorage.blob.core.windows.net/appimages/altpeps.jpg" alt="login" class="login-card-img">
+          </div>
+          </div>
+          
+        </div>
+      </div>
+    
+    </div>
+  </main>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+</body>
+</html>

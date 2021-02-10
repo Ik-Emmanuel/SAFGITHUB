@@ -1,0 +1,339 @@
+{%  extends "layout.html" %}
+
+{%  block content  %}
+        
+
+<!-- <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="https://pixinvent.com/stack-responsive-bootstrap-4-admin-template/app-assets/css/bootstrap-extended.min.css">
+<link rel="stylesheet" type="text/css" href="https://pixinvent.com/stack-responsive-bootstrap-4-admin-template/app-assets/fonts/simple-line-icons/style.min.css">
+<link rel="stylesheet" type="text/css" href="https://pixinvent.com/stack-responsive-bootstrap-4-admin-template/app-assets/css/colors.min.css">
+<link rel="stylesheet" type="text/css" href="https://pixinvent.com/stack-responsive-bootstrap-4-admin-template/app-assets/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+<style> -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;1,500&display=swap">
+
+
+  <script>
+
+
+    window.addEventListener("load", function () {
+        const loader = document.querySelector(".loader");
+        loader.className += " hidden"; // class "loader hidden"
+    });
+
+
+
+    $('a').click(function(e) {
+    $('<div class=loader>loading...</div>').prependTo(document.body); 
+    e.preventDefault();
+    var destination = this.href;
+    setTimeout(function() {
+        window.location = destination;
+    },1000);
+    $('<iframe>').hide().appendTo('body').load(function() {
+        window.location = destination;
+    }).attr('src', destination);
+});
+
+
+
+
+
+
+
+    $('a').click(function(){
+  
+});
+    </script>
+
+
+<style>
+.grey-bg {  
+    background-color: #F5F7FA;
+}
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900');
+
+div.list-group {
+
+  max-width:900px;
+            max-height: 130vh;
+            
+           
+             text-align: left;
+             overflow: auto;
+       
+
+
+
+
+}
+
+
+body{
+    font-family: 'Roboto', sans-serif;
+}
+
+.ticker-wrapper{
+  position: relative;
+  max-width: 800px;
+  margin: auto;
+ 
+
+}
+
+.bigHeading{
+display: block;
+position: absolute;
+font-style: italic;
+font-size: 25px;
+background-color: #212729;
+color: #fff;
+text-transform: uppercase;
+padding: 6.8px;
+letter-spacing: 1px;
+font-weight: 100;
+z-index: 2;
+
+}
+
+.bigHeading::after,
+.bigHeading::before{
+  content:'';
+  width: 0;
+  position: absolute;
+  border-width: 50px;
+  border-style: solid;
+  top: 0;
+  z-index: -1;
+}
+
+.bigHeading::before{
+  border-color: #212729 transparent transparent
+  transparent ;
+  right: -51px;
+
+}
+
+.bigHeading::after{
+  border-color:  transparent  transparent #212729 
+  transparent  ;
+  left: -50px;
+  top: -49px;
+
+}
+
+
+.text-update{
+  height:53px;
+  padding-top: 0.5em;
+
+  background: #0051ff10;
+  overflow: hidden;
+  position: relative;
+  color: rgb(0, 0, 0);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 20px;
+  font-weight: 500;
+  display: flex;
+ 
+  left: 125px;
+  
+  white-space: nowrap;
+}
+
+.text-update marquee{
+position: absolute;
+width: 150%;
+margin: 0;
+font-weight: 700;
+text-align: left;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+.com-icon{
+      margin-bottom: .35em;
+      color: #ec1616;
+    }
+
+   
+    #page-loader {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    display: none;
+    text-align: center;
+    width: 100%;
+    
+    padding-left: 8em;
+    background-color: rgba(255, 255, 255, 0); 
+}
+
+div.grey-bg {
+position: relative;
+max-height: 100vh;
+overflow: auto;
+
+            
+}  
+</style> 
+
+
+
+  <form  method="POST" action="/selectdateiinvest">
+    <div class="col-xl-12 col-sm-12 col-12" style="padding-left: 2em;font-family: Poppins, sans-serif; justify-content: center; display: flex;" > 
+           
+      <b style="color: black;">Start:</b>  <input type="date" name="startdate"  required="required" id="startdate" class="form__input" style="border-radius: 8px;">
+    
+       <b style="color: #000000;">End:</b> <input type="date" name="enddate"   required="required" id="enddate" class="form__input"  style="border-radius: 8px;">
+    
+        <input type="submit" value = "Search" style="background-color:#212729;  border-radius: 8px;color: white;" onclick="picture()">
+      </div>
+
+    </form>
+    
+<div class="grey-bg container-fluid"  style="text-align: center; background-image:linear-gradient(rgba(255, 255, 255, 0.171), rgba(252, 252, 252, 0.116)),  url(https://azermstorage.blob.core.windows.net/appimages/pat3.png); background-size: 1000px;">
+  <section id="minimal-statistics">
+    <div class="row">
+      <div class="col-12 mt-3 mb-1">
+        <h3 class="text-uppercase text-right" style="padding-right: 1em;">       <img  style="height: 75px; width: 150px; float: left;" src="static/pay.png" alt="logo">      <img  style="height: 38px; width: 50px;" src="https://azermstorage.blob.core.windows.net/appimages/facebook.png" alt="logo" class="logo"> <img  style="height: 30px; width: 30px;" src="https://azermstorage.blob.core.windows.net/appimages/insta.png" alt="logo" class="logo"><img  style="height: 50px; width: 50px;" src="https://azermstorage.blob.core.windows.net/appimages/twitter.png" alt="logo" class="logo">  </h3>
+       
+      </div>
+    </div> 
+  
+
+
+ 
+
+    
+      <div class="row">
+        <div class="col-lg-5 col-xs-12">
+          
+          <div class="card-deck mb-1 text-center" style="font-family: Poppins, sans-serif;"  >
+            <div class="card mb-4 box-shadow" style="border-radius: 50px " >
+              <div class="card-body" style="background-image:linear-gradient(rgba(255, 255, 255, 0.973), rgba(252, 252, 252, 0.877)),  url(https://azermstorage.blob.core.windows.net/appimages/bdp.png); background-size: 100%; border-radius: 20px; box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.705);">
+                <i class="fas fa-quote-right fa-3x com-icon"></i>
+
+                <h3 class="card-title pricing-card-title"> <b style="color: #000000;"> Mentions</b></h3>
+                <p class="mt-3 mb-4" style="color: black; text-align: left;">Across Facebook, Twitter and Instagram today, <b style="color: red; text-shadow:0.8px 0.8px 0.9px #000000;  font-weight: 200px;">  Altpay</b> has had a total of  <u><b>{{data['total_mentions']}}</b></u> mentions <b style="color: red;"> <u><b>{{data['Negative_count']}}</b></u></b> of which are negative.</p>
+              </div>
+            </div>
+          
+          </div>
+        
+          <div class="card-deck mb-1 " style="font-family: Poppins, sans-serif;" >
+            <div class="card mb-4 box-shadow" style="border-radius: 200px;">
+              <div class="card-body text-center" style="background-image:linear-gradient(rgba(255, 255, 255, 0.973), rgba(252, 252, 252, 0.89)),  url(https://azermstorage.blob.core.windows.net/appimages/bdp.png); background-size: 590px; border-radius: 20px; box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.705);" >
+                <i class="fas fa-balance-scale fa-3x com-icon"></i>
+                
+                <h3 class="card-title pricing-card-title "> <b style="color:#000000;"> Sentiments</b></h3>
+                <h5 style="color: green;"> <b> Positive Sentiments:  </b>  <b>{{data['Positive_count']}}</b> </h5>
+                <p style="color: black;">  {{data['Positive_%change']}} <img  style="height: 19px; width: 23px;"  src="{{data['%Positive_change_icon']}}" alt="logo" class="logo"> </p> <br> 
+                <h5 style="color: rgb(255, 55, 20);"> <b> Negative Sentiments:  <b>{{data['Negative_count']}}</b></b> </h5>
+                <p style="color: black;">  {{data['Negative_%change']}} <img  style="height: 19px; width: 23px;"  src="{{data['%Negative_change_icon']}}" alt="logo" class="logo">  </p> <br> 
+  
+                <h5 style="color: rgb(218, 203, 6);"> <b> Neutral Sentiments:  <b>{{data['Neutral_count']}}</b></b> </h5>
+                <p style="color: black;">{{data['Neutral_%change']}}</p> <br> 
+  
+             
+              </div>
+          
+           
+            </div>
+         
+          </div>
+          <button type="button" class="btn btn-primary com-button" style="background-color: #212729; float: left;"> <img  style="height: 20px; width: 20px;" src="https://azermstorage.blob.core.windows.net/appimages/ref .png" alt="logo" class="logo"> <a href=" {{ url_for('iinvest') }}" onclick="picture()" > <b style="color: white;">Refresh Data </b> </a> </button> <br>
+        </div>
+        <div class="list-group col-lg-8 col-xs-12  col-xl-7 col-sm-12 col-12" style="background-color:white; width: 500vh; background-image:linear-gradient(rgba(255, 255, 255, 0.935), rgba(252, 252, 252, 0.89)),  url(https://azermstorage.blob.core.windows.net/appimages/bdp.png); background-size: 800px; background-repeat: repeat-y;border-radius: 20px; box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.596);font-family: Poppins, sans-serif;" > <br>
+         
+<br>
+         <h3 style="text-align: center;"> <b style=" color: #000000;">  Most recent Posts</b> <br> <br>
+
+          <div class="dropdown" style="float: left; padding-left: 1em;">
+            <button  style="background-color: #212729; " class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Filter by Sentiments
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="background-image:linear-gradient(rgba(255, 255, 255, 0.096), rgba(255, 255, 255, 0.664)),  url(https://azermstorage.blob.core.windows.net/appimages/pat3.png); background-size: 500px;">
+              <form method="POST" action="/iinvestsentiment">
+                <img  style="height: 28px; width: 28px;" src="https://azermstorage.blob.core.windows.net/appimages/favicon.png" alt="logo" class="logo"><input type="submit" name="all"  style="border-radius: 7px;" value="All" onclick="picture()"> <br>
+                <img  style="height: 28px; width: 28px;" src="https://azermstorage.blob.core.windows.net/appimages/pos.png" alt="logo" class="logo"><input type="submit" name="pos"  style="border-radius: 7px;" value="Positive" onclick="picture()"> <br>
+                <img  style="height: 28px; width: 28px;" src="https://azermstorage.blob.core.windows.net/appimages/neg.png" alt="logo" class="logo"> <input type="submit" name="neg"  style="border-radius: 7px;" value="Negative" onclick="picture()"> <br>
+                <img  style="height: 28px; width: 28px;" src="https://azermstorage.blob.core.windows.net/appimages/neut.png" alt="logo" class="logo"> <input type="submit" name="neut"  style="border-radius: 7px;" value="Neutral" onclick="picture()">
+             </form></div>
+            </div>
+        
+          <div class="dropdown" style="float: right;">
+            <button  style="background-color: #212729; " class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Filter by Channel
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="background-image:linear-gradient(rgba(255, 255, 255, 0.096), rgba(255, 255, 255, 0.664)),  url(https://azermstorage.blob.core.windows.net/appimages/pat3.png); background-size: 500px;">
+
+            <form method="POST" action="/iinvestchannel">
+              <img  style="height: 28px; width: 28px;" src="https://azermstorage.blob.core.windows.net/appimages/favicon.png" alt="logo" class="logo"><input type="submit" name="all"   style="border-radius: 7px;"  value="All" onclick="picture()"> <br>
+              <img  style="height: 28px; width: 38px;" src="https://azermstorage.blob.core.windows.net/appimages/facebook.png" alt="logo" class="logo"><input type="submit" name="fb"  style="border-radius: 7px;"  value="Facebook" onclick="picture()"> <br>
+              <img  style="height: 28px; width: 28px;" src="https://azermstorage.blob.core.windows.net/appimages/insta.png" alt="logo" class="logo"> <input type="submit" name="ig"  style="border-radius: 7px;"   value="Instagram" onclick="picture()"> <br>
+              <img  style="height: 28px; width: 28px;" src="https://azermstorage.blob.core.windows.net/appimages/twitter.png" alt="logo" class="logo"> <input type="submit" name="twitter"  style="border-radius: 7px;"   value="Twiiter" onclick="picture()">
+              
+
+          </form></div>
+          </div>
+        
+        </h3>  <br>
+
+        <div class="container st " style="background-image:linear-gradient(rgba(255, 255, 255, 0.935), rgba(252, 252, 252, 0.89)),  url(https://azermstorage.blob.core.windows.net/appimages/bdp.png); background-size: 620px;">
+            {% for result in data['Post_data'] %} 
+
+            
+              <div class="d-flex w-100 justify-content-between" >
+               <h5 class="mb-1" style="color: black;">   <img  style="height: 30px; width: 38px;" src="{{result['Channel_logo']}}" alt="logo" class="logo"> {{result['Username']}}</h5> <br> <br> <b style="color: black;">{{result['Date']}}</b>
+                <!-- <h5 class="mb-1"> Username: {{result['Username']}}</h5> <br> <br> -->
+    <!--             <small>3 days ago</small> -->
+              </div>
+             <a href=" {{result['Post_url']}}" target="_blank"> <p class="mb-1" style=" color: black; background-color: rgba(100, 148, 237, 0.144);" > {{result['Post']}}</p> </a>
+          
+             
+             
+             <h5  class="mb-1" style=" text-shadow: 0.9px 0.9px 0.9px #000000;" > <img  style="height: 30px; width: 50px; padding-left: 1em; " src="https://azermstorage.blob.core.windows.net/appimages/like.png" alt="logo" class="logo"> 
+              {{result['Likes']}} <img  style="height: 30px; width: 50px; padding-left: 1em;" src="https://azermstorage.blob.core.windows.net/appimages/comment.png" alt="logo" class="logo">  {{result['Comments']}}   <img  style="height: 30px; width: 50px; padding-left: 1em;" src="https://azermstorage.blob.core.windows.net/appimages/share.png" alt="logo" class="logo">  {{result['Shares']}}
+             <img  style="height: 30px; width: 50px; padding-left: 1em;" src="{{result['Sentiment_emojie']}}" id="myimage" alt="logo" class="logo"> <select style="border-radius: 8px;" >
+               <option value="sentiment">{{result["Sentiment"]}}</option>
+               <option value="other1">{{result["drop_down"][0]}}</option>
+               <option value="other2">{{result["drop_down"][1]}}</option>
+               </select>  </h5> <br><br>
+              {% endfor %}
+
+
+
+
+
+
+
+
+
+          
+        </div>
+       
+          
+          <br> <br>
+          </div>
+         
+        </div>
+        
+      </div>
+    
+    
+            
+{%  endblock  %}

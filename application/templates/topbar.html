@@ -1,0 +1,45 @@
+<!-- Topbar -->
+
+
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+    <!-- Sidebar Toggle (Topbar) -->
+    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+        <i class="fa fa-bars" style="color: red;"></i>
+    </button>
+    <img style="  float: left;  height: 3.7vw; width: 8.8vw;" src="https://azermstorage.blob.core.windows.net/appimages/altng.png" alt="logo" class="logo"> 
+ 
+    <!-- Topbar Navbar -->
+
+    <img  id="loadpic" style=" display:none; height: 30px; width: 40px; top: 0.1em; left: 37%; position: relative;" src="static/gad.gif" > 
+    
+    <ul class="navbar-nav ml-auto">
+
+        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+
+      
+      
+
+        <!-- Nav Item - User Information -->
+
+        <li class="nav-item dropdown no-arrow" style="font-family: poppins, sans-serif;">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="mr-2 d-none d-lg-inline text-gray-600 small"> <b style="color: rgb(255, 0, 0);"> Logged in:</b> <b style="color: black;"> {{ user }}</b>  </span>
+                <i class="fas fa-sign-out-alt fa fa-fw mr-2 " style="color: red;"></i>
+            </a>
+            <!-- Dropdown - User Information -->
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="userDropdown">
+             
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                    
+                   <b style="color: red;"> Logout</b>
+                </a>
+            </div>
+        </li>
+
+    </ul>
+
+</nav>
