@@ -1,0 +1,15 @@
+{
+  "default": {
+    "flights": [],
+    "configuration": {
+      "CloudExecution": false,
+      "LocalRunSnapshot": false,
+      "LocalProjectSystem": false,
+      "TestBool": false,
+      "TestInteger": 0,
+      "TestString": "abc"
+    },
+    "lastUpdate": "2018-02-22 15:48:37.794404"
+  },
+  "version": "v1"
+}

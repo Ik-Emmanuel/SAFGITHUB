@@ -6,14 +6,12 @@ from flask import render_template, request, json, jsonify, Response, redirect, f
 from application.forms import LoginForm, RegisterForm
 from application.models import User
 
-
 global SRMS
 SRMS = SRMS()
 
 
 @app.route('/')
 def login():
-
     if 'email' in session:
         return redirect(url_for('index'))
 
@@ -46,12 +44,12 @@ def loginny():
                         session['is_admin'] = is_admin
                         session['is_super_admin'] = is_super_admin
 
-                        table = "[dbo].[SRMS_users_activity_table]"
+                        table = "[dbo].[SAF_users_activity_table]"
 
                         data = {
-                                "Email": email,
-                                "[Time-in]": str(datetime.datetime.now())
-                                }
+                            "Email": email,
+                            "[Time-in]": str(datetime.datetime.now())
+                        }
 
                         # print(f"data: {data}")
 
@@ -77,7 +75,7 @@ def loginny():
                         session['is_admin'] = is_admin
                         session['is_super_admin'] = is_super_admin
 
-                        table = "[dbo].[SRMS_users_activity_table]"
+                        table = "[dbo].[SAF_users_activity_table]"
 
                         data = {
                             "Email": email,
@@ -131,7 +129,7 @@ def signout():
     session.pop('is_admin', None)
     session.pop('is_super_admin', None)
 
-    table = "[dbo].[SRMS_users_activity_table]"
+    table = "[dbo].[SAF_users_activity_table]"
     ins_qry = f"select top(1) [activity_id] from {table} where Email = '{email}' order by [Time-in] desc"
 
     try:
@@ -170,7 +168,8 @@ def signup():
 
         if valid[0]:
 
-            user = User(email=email,  password=password, firstname=first_name, lastname=last_name, is_admin=is_admin, is_super_admin=is_super_admin, is_approved=is_approved, DateLoaded=DateLoaded)
+            user = User(email=email, password=password, firstname=first_name, lastname=last_name, is_admin=is_admin,
+                        is_super_admin=is_super_admin, is_approved=is_approved, DateLoaded=DateLoaded)
             db.session.add(user)
             db.session.commit()
 
@@ -188,26 +187,29 @@ def signup():
 
 @app.route('/signuprequest', methods=["GET", "POST"])
 def signuprequest():
-
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
 
-    data = db.session.execute("select user_id, firstname, Email, lastname, DateLoaded from dbo.SRMS_users_table where is_Approved = 0 order by DateLoaded desc")
+    data = db.session.execute(
+        "select user_id, firstname, Email, lastname, DateLoaded from dbo.SAF_users_table where is_Approved = 0 order by DateLoaded desc")
     result = []
 
     for data in db.session.query(User).instances(data):
-
         value = {
-                  "user_id": data.user_id,
-                  "Name": f"{data.firstname} {data.lastname}",
-                  "DateLoaded": data.DateLoaded, 
-                  "Email": data.email
-                }
+            "user_id": data.user_id,
+            "Name": f"{data.firstname} {data.lastname}",
+            "DateLoaded": data.DateLoaded,
+            "Email": data.email
+        }
 
         result.append(value)
 
@@ -219,26 +221,29 @@ def signuprequest():
 
 @app.route('/adminrequest', methods=["GET", "POST"])
 def adminrequest():
-
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
 
-    data = db.session.execute("select user_id, firstname, Email, lastname, DateLoaded from dbo.SRMS_users_table where is_Admin = 0 order by DateLoaded desc")
+    data = db.session.execute(
+        "select user_id, firstname, Email, lastname, DateLoaded from dbo.SAF_users_table where is_Admin = 0 order by DateLoaded desc")
     result = []
 
     for data in db.session.query(User).instances(data):
-
         value = {
-                  "user_id": data.user_id,
-                  "Name": f"{data.firstname} {data.lastname}",
-                  "DateLoaded": data.DateLoaded, 
-                  "Email": data.email
-                }
+            "user_id": data.user_id,
+            "Name": f"{data.firstname} {data.lastname}",
+            "DateLoaded": data.DateLoaded,
+            "Email": data.email
+        }
 
         result.append(value)
 
@@ -250,7 +255,6 @@ def adminrequest():
 
 @app.route('/approverequest', methods=["GET"])
 def approverequest():
-
     if 'email' not in session:
         return redirect(url_for('login'))
 
@@ -262,7 +266,7 @@ def approverequest():
     user_id = request.args.get('id')
 
     try:
-        db.session.execute(f"update [dbo].[SRMS_users_table] set is_Approved = 1 where user_id = {user_id}")
+        db.session.execute(f"update [dbo].[SAF_users_table] set is_Approved = 1 where user_id = {user_id}")
         db.session.commit()
         result = "User access successfully approved"
     except Exception as e:
@@ -279,16 +283,19 @@ def declinerequest():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
 
     user_id = request.args.get('id2')
 
-
     try:
-        db.session.execute(f"DELETE FROM dbo.SRMS_users_table where user_id = {user_id}")
+        db.session.execute(f"DELETE FROM dbo.SAF_users_table where user_id = {user_id}")
         db.session.commit()
         result = "User access successfully declined"
     except Exception as e:
@@ -299,14 +306,16 @@ def declinerequest():
     return redirect(url_for("signuprequest"))
 
 
-
 @app.route('/approveadminrequest', methods=["GET"])
 def approveadminrequest():
-
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -314,7 +323,7 @@ def approveadminrequest():
     user_id = request.args.get('id')
 
     try:
-        db.session.execute(f"update [dbo].[SRMS_users_table] set is_Admin = 1 where user_id = {user_id}")
+        db.session.execute(f"update [dbo].[SAF_users_table] set is_Admin = 1 where user_id = {user_id}")
         db.session.commit()
         result = "User admin request successfully approved"
     except Exception as e:
@@ -328,17 +337,21 @@ def approveadminrequest():
 
 @app.route('/home')
 def index():
-
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
     # print(user)
 
     if user is None:
         return redirect(url_for('login'))
     else:
-        return render_template('index.html', user=session['email'], admin=session['is_admin'], super_admin=session['is_super_admin'])
+        return render_template('index.html', user=session['email'], admin=session['is_admin'],
+                               super_admin=session['is_super_admin'])
 
 
 @app.route('/brand')
@@ -346,7 +359,11 @@ def brand():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -361,8 +378,11 @@ def brand():
 def igplatform():
     if 'email' not in session:
         return redirect(url_for('login'))
-
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -378,7 +398,11 @@ def twitterplatform():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -394,7 +418,11 @@ def linkedinplatform():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -407,7 +435,11 @@ def fbplatform():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -423,7 +455,11 @@ def nlplatform():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -436,7 +472,11 @@ def twittertrend():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -449,7 +489,11 @@ def igtrend():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -462,7 +506,11 @@ def fbtrend():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -475,7 +523,11 @@ def comp():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -488,7 +540,11 @@ def product():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -501,7 +557,11 @@ def productall():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -509,58 +569,70 @@ def productall():
         return render_template('productall.html', user=session['email'])
 
 
-@app.route('/specta')
-def specta():
+@app.route('/altpower')
+def altpower():
     try:
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
         else:
             SRMS.database_connection()
-            data = SRMS.specta()
-            # print(f"'Specta data': {data}")
-            return render_template('specta.html', user=session['email'], data=data)
+            data = SRMS.altpower()
+            # print(f"'altpower data': {data}")
+            return render_template('altpower.html', user=session['email'], data=data)
     except Exception as e:
 
         flash("Oops, something went wrong, Please try again...", "danger")
 
-        return render_template('specta.html', user=session['email'], data=None)
+        return render_template('altpower.html', user=session['email'], data=None)
 
 
-@app.route('/onepay')
-def onepay():
+@app.route('/altdrive')
+def altdrive():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
     else:
         SRMS.database_connection()
-        data = SRMS.onepay()
-        # print(f"'onepay data': {data}")
-        return render_template('onepay.html', user=session['email'], data=data)
+        data = SRMS.altdrive()
+        # print(f"'altdrive data': {data}")
+        return render_template('altdrive.html', user=session['email'], data=data)
 
 
-@app.route('/onebank')
-def onebank():
+@app.route('/altmall')
+def altmall():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
     else:
         SRMS.database_connection()
-        data = SRMS.onebank()
-        # print(f"'Onebank data': {data}")
-        return render_template('onebank.html', user=session['email'], data=data)
+        data = SRMS.altmall()
+        # print(f"'altmall data': {data}")
+        return render_template('altmall.html', user=session['email'], data=data)
 
 
 @app.route('/doubble')
@@ -568,7 +640,11 @@ def doubble():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -579,20 +655,24 @@ def doubble():
         return render_template('doubble.html', user=session['email'], data=data)
 
 
-@app.route('/iinvest')
-def iinvest():
+@app.route('/altpay')
+def altpay():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
     else:
         SRMS.database_connection()
-        data = SRMS.i_invest()
-        # print(f"'i-invest_data': {data}")
-        return render_template('iinvest.html', user=session['email'], data=data)
+        data = SRMS.altpay()
+        # print(f"'altpay_data': {data}")
+        return render_template('altpay.html', user=session['email'], data=data)
 
 
 @app.route('/platformall')
@@ -600,7 +680,11 @@ def platformall():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -613,7 +697,11 @@ def feedback():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -626,7 +714,11 @@ def report():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -639,7 +731,11 @@ def selectdatebrand():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -657,7 +753,11 @@ def selectdatefb():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -675,7 +775,11 @@ def selectdatetwitter():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -685,7 +789,8 @@ def selectdatetwitter():
         SRMS.database_connection()
         data = SRMS.twitter_daterange(startdate, enddate)
         # print(f"'twitter_date_range_data': {data}")
-        return render_template('twitterdate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+        return render_template('twitterdate.html', user=session['email'], data=data, startdate=startdate,
+                               enddate=enddate)
 
 
 @app.route("/selectdateig", methods=["GET", "POST"])
@@ -693,7 +798,11 @@ def selectdateig():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -706,13 +815,17 @@ def selectdateig():
         return render_template('igdate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
 
 
-@app.route("/selectdatespecta", methods=["GET", "POST"])
-def selectdatespecta():
+@app.route("/selectdatealtpower", methods=["GET", "POST"])
+def selectdatealtpower():
     try:
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -721,15 +834,16 @@ def selectdatespecta():
             enddate = request.form.get("enddate")
 
             SRMS.database_connection()
-            data = SRMS.daterange_specta(startdate, enddate)
+            data = SRMS.daterange_altpower(startdate, enddate)
             # print(f"'Specta_date_range_data': {data}")
-            return render_template('spectadate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('altpowerdate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('spectadate.html', user=session['email'], data=None)
+        return render_template('altpowerdate.html', user=session['email'], data=None)
 
 
 @app.route("/selectdatedoubble", methods=["GET", "POST"])
@@ -737,7 +851,11 @@ def selectdatedoubble():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -748,15 +866,20 @@ def selectdatedoubble():
         SRMS.database_connection()
         data = SRMS.daterange_doubble(startdate, enddate)
         # print(f"'doubble_date_range_data': {data}")
-        return render_template('doubledate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+        return render_template('doubledate.html', user=session['email'], data=data, startdate=startdate,
+                               enddate=enddate)
 
 
-@app.route("/selectdateiinvest", methods=["GET", "POST"])
-def selectdateiinvest():
+@app.route("/selectdatealtpay", methods=["GET", "POST"])
+def selectdatealtpay():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -765,17 +888,22 @@ def selectdateiinvest():
         enddate = request.form.get("enddate")
 
         SRMS.database_connection()
-        data = SRMS.daterange_i_invest(startdate, enddate)
-        # print(f"'i-invest_date_range_data': {data}")
-        return render_template('iinvestdate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+        data = SRMS.daterange_altpay(startdate, enddate)
+        # print(f"'altpay_date_range_data': {data}")
+        return render_template('altpaydate.html', user=session['email'], data=data, startdate=startdate,
+                               enddate=enddate)
 
 
-@app.route("/selectdateonebank", methods=["GET", "POST"])
-def selectdateonebank():
+@app.route("/selectdatealtmall", methods=["GET", "POST"])
+def selectdatealtmall():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -784,17 +912,22 @@ def selectdateonebank():
         enddate = request.form.get("enddate")
 
         SRMS.database_connection()
-        data = SRMS.daterange_onebank(startdate, enddate)
-        # print(f"'Onebank_date_range_data': {data}")
-        return render_template('onebankdate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+        data = SRMS.daterange_altmall(startdate, enddate)
+        # print(f"'altmall_date_range_data': {data}")
+        return render_template('altmalldate.html', user=session['email'], data=data, startdate=startdate,
+                               enddate=enddate)
 
 
-@app.route("/selectdateonepay", methods=["GET", "POST"])
-def selectdateonepay():
+@app.route("/selectdatealtdrive", methods=["GET", "POST"])
+def selectdatealtdrive():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -803,9 +936,10 @@ def selectdateonepay():
         enddate = request.form.get("enddate")
 
         SRMS.database_connection()
-        data = SRMS.daterange_onepay(startdate, enddate)
-        # print(f"'OnePay_date_range_data': {data}")
-        return render_template('onepaydate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+        data = SRMS.daterange_altdrive(startdate, enddate)
+        # print(f"'Altdrive_date_range_data': {data}")
+        return render_template('altdrivedate.html', user=session['email'], data=data, startdate=startdate,
+                               enddate=enddate)
 
 
 @app.route("/feedbackentry", methods=["GET", "POST"])
@@ -813,7 +947,11 @@ def feedbackentry():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -841,7 +979,11 @@ def brandsentiment():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -868,7 +1010,11 @@ def facebooksentiment():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -895,7 +1041,11 @@ def twittersentiment():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -922,7 +1072,11 @@ def instagramsentiment():
     if 'email' not in session:
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=session['email']).first()
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
 
     if user is None:
         return redirect(url_for('login'))
@@ -943,14 +1097,18 @@ def instagramsentiment():
         return render_template('igplatform.html', user=session['email'], data=data)
 
 
-@app.route('/spectasentiment', methods=["GET", "POST"])
-def spectasentiment():
+@app.route('/altpowersentiment', methods=["GET", "POST"])
+def altpowersentiment():
     try:
         # for brand performance
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -962,28 +1120,32 @@ def spectasentiment():
             elif 'neut' in request.form:
                 sentiment = "Neutral"
             else:
-                return redirect(url_for('specta'))
+                return redirect(url_for('altpower'))
 
             SRMS.database_connection()
 
-            data = SRMS.specta_filter_by_sentiment(sentiment)
+            data = SRMS.altpower_filter_by_sentiment(sentiment)
 
-            return render_template('specta.html', user=session['email'], data=data)
+            return render_template('altpower.html', user=session['email'], data=data)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('specta.html', user=session['email'], data=None)
+        return render_template('altpower.html', user=session['email'], data=None)
 
 
-@app.route('/spectachannel', methods=["GET", "POST"])
-def spectachannel():
+@app.route('/altpowerchannel', methods=["GET", "POST"])
+def altpowerchannel():
     try:
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -995,28 +1157,32 @@ def spectachannel():
             elif "twitter" in request.form:
                 platform = "Twitter"
             else:
-                return redirect(url_for('specta'))
+                return redirect(url_for('altpower'))
 
             SRMS.database_connection()
 
-            data = SRMS.specta_filter_by_channel(platform)
+            data = SRMS.altpower_filter_by_channel(platform)
 
-            return render_template('specta.html', user=session['email'], data=data)
+            return render_template('altpower.html', user=session['email'], data=data)
     except Exception as e:
         print(str(e))
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('specta.html', user=session['email'], data=None)
+        return render_template('altpower.html', user=session['email'], data=None)
 
 
-@app.route('/iinvestsentiment', methods=["GET", "POST"])
-def iinvestsentiment():
+@app.route('/altpaysentiment', methods=["GET", "POST"])
+def altpaysentiment():
     try:
         # for brand performance
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1028,28 +1194,32 @@ def iinvestsentiment():
             elif 'neut' in request.form:
                 sentiment = "Neutral"
             else:
-                return redirect(url_for('iinvest'))
+                return redirect(url_for('altpay'))
 
             SRMS.database_connection()
 
-            data = SRMS.iinvest_filter_by_sentiment(sentiment)
+            data = SRMS.altpay_filter_by_sentiment(sentiment)
 
-            return render_template('iinvest.html', user=session['email'], data=data)
+            return render_template('altpay.html', user=session['email'], data=data)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('iinvest.html', user=session['email'], data=None)
+        return render_template('altpay.html', user=session['email'], data=None)
 
 
-@app.route('/iinvestchannel', methods=["GET", "POST"])
-def iinvestchannel():
+@app.route('/altpaychannel', methods=["GET", "POST"])
+def altpaychannel():
     try:
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1061,29 +1231,33 @@ def iinvestchannel():
             elif "twitter" in request.form:
                 platform = "Twitter"
             else:
-                return redirect(url_for('iinvest'))
+                return redirect(url_for('altpay'))
 
             SRMS.database_connection()
 
-            data = SRMS.iinvest_filter_by_channel(platform)
+            data = SRMS.altpay_filter_by_channel(platform)
 
-            return render_template('iinvest.html', user=session['email'], data=data)
+            return render_template('altpay.html', user=session['email'], data=data)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('iinvest.html', user=session['email'], data=None)
+        return render_template('altpay.html', user=session['email'], data=None)
 
 
-@app.route('/onebanksentiment', methods=["GET", "POST"])
-def onebanksentiment():
+@app.route('/altmallsentiment', methods=["GET", "POST"])
+def altmallsentiment():
     try:
         # for brand performance
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1095,28 +1269,32 @@ def onebanksentiment():
             elif 'neut' in request.form:
                 sentiment = "Neutral"
             else:
-                return redirect(url_for('onebank'))
+                return redirect(url_for('altmall'))
 
             SRMS.database_connection()
 
-            data = SRMS.onebank_filter_by_sentiment(sentiment)
+            data = SRMS.altmall_filter_by_sentiment(sentiment)
 
-            return render_template('onebank.html', user=session['email'], data=data)
+            return render_template('altmall.html', user=session['email'], data=data)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('onebank.html', user=session['email'], data=None)
+        return render_template('altmall.html', user=session['email'], data=None)
 
 
-@app.route('/onebankchannel', methods=["GET", "POST"])
-def onebankchannel():
+@app.route('/altmallchannel', methods=["GET", "POST"])
+def altmallchannel():
     try:
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1128,29 +1306,33 @@ def onebankchannel():
             elif "twitter" in request.form:
                 platform = "Twitter"
             else:
-                return redirect(url_for('onebank'))
+                return redirect(url_for('altmall'))
 
             SRMS.database_connection()
 
-            data = SRMS.onebank_filter_by_channel(platform)
+            data = SRMS.altmall_filter_by_channel(platform)
 
-            return render_template('onebank.html', user=session['email'], data=data)
+            return render_template('altmall.html', user=session['email'], data=data)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('onebank.html', user=session['email'], data=None)
+        return render_template('altmall.html', user=session['email'], data=None)
 
 
-@app.route('/onepaysentiment', methods=["GET", "POST"])
-def onepaysentiment():
+@app.route('/altdrivesentiment', methods=["GET", "POST"])
+def altdrivesentiment():
     try:
         # for brand performance
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1162,28 +1344,32 @@ def onepaysentiment():
             elif 'neut' in request.form:
                 sentiment = "Neutral"
             else:
-                return redirect(url_for('onepay'))
+                return redirect(url_for('altdrive'))
 
             SRMS.database_connection()
 
-            data = SRMS.onepay_filter_by_sentiment(sentiment)
+            data = SRMS.altdrive_filter_by_sentiment(sentiment)
 
-            return render_template('onepay.html', user=session['email'], data=data)
+            return render_template('altdrive.html', user=session['email'], data=data)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('onepay.html', user=session['email'], data=None)
+        return render_template('altdrive.html', user=session['email'], data=None)
 
 
-@app.route('/onepaychannel', methods=["GET", "POST"])
-def onepaychannel():
+@app.route('/altdrivechannel', methods=["GET", "POST"])
+def altdrivechannel():
     try:
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1195,19 +1381,19 @@ def onepaychannel():
             elif "twitter" in request.form:
                 platform = "Twitter"
             else:
-                return redirect(url_for('onepay'))
+                return redirect(url_for('altdrive'))
 
             SRMS.database_connection()
 
-            data = SRMS.onepay_filter_by_channel(platform)
+            data = SRMS.altdrive_filter_by_channel(platform)
 
-            return render_template('onepay.html', user=session['email'], data=data)
+            return render_template('altdrive.html', user=session['email'], data=data)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('onepay.html', user=session['email'], data=None)
+        return render_template('altdrive.html', user=session['email'], data=None)
 
 
 @app.route('/doubblesentiment', methods=["GET", "POST"])
@@ -1217,7 +1403,11 @@ def doubblesentiment():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1250,7 +1440,11 @@ def doubblechannel():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1284,7 +1478,11 @@ def branddatesentiment():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1309,7 +1507,8 @@ def branddatesentiment():
             else:
                 data = SRMS.brand_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            return render_template('branddate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('branddate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
@@ -1325,7 +1524,11 @@ def twitterdatesentiment():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1350,7 +1553,8 @@ def twitterdatesentiment():
             else:
                 data = SRMS.twitter_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            return render_template('twitterdate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('twitterdate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
@@ -1366,7 +1570,11 @@ def facebookdatesentiment():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1390,7 +1598,8 @@ def facebookdatesentiment():
             else:
                 data = SRMS.facebook_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            return render_template('fbdate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('fbdate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
@@ -1406,7 +1615,11 @@ def instagramdatesentiment():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1431,7 +1644,8 @@ def instagramdatesentiment():
             else:
                 data = SRMS.instagram_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            return render_template('igdate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('igdate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
@@ -1447,7 +1661,11 @@ def spectadatesentiment():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1472,13 +1690,14 @@ def spectadatesentiment():
             else:
                 data = SRMS.specta_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            return render_template('spectadate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('altpowerdate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('spectadate.html', user=session['email'], data=None)
+        return render_template('altpowerdate.html', user=session['email'], data=None)
 
 
 @app.route('/spectadatechannel', methods=["GET", "POST"])
@@ -1487,7 +1706,11 @@ def spectadatechannel():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1512,13 +1735,14 @@ def spectadatechannel():
             else:
                 data = SRMS.specta_daterange_filter_by_channel(platform, startdate, enddate)
 
-            return render_template('spectadate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('altpowerdate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('spectadate.html', user=session['email'], data=None)
+        return render_template('altpowerdate.html', user=session['email'], data=None)
 
 
 @app.route('/doubbledatesentiment', methods=["GET", "POST"])
@@ -1528,7 +1752,11 @@ def doubbledatesentiment():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1553,7 +1781,8 @@ def doubbledatesentiment():
             else:
                 data = SRMS.doubble_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            return render_template('doubledate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('doubledate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
@@ -1568,7 +1797,11 @@ def doubbledatechannel():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1593,7 +1826,8 @@ def doubbledatechannel():
             else:
                 data = SRMS.doubble_daterange_filter_by_channel(platform, startdate, enddate)
 
-            return render_template('doubledate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('doubledate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
@@ -1609,7 +1843,11 @@ def onebankdatesentiment():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1634,13 +1872,14 @@ def onebankdatesentiment():
             else:
                 data = SRMS.onebank_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            return render_template('onebankdate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('altmalldate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('onebankdate.html', user=session['email'], data=None)
+        return render_template('altmalldate.html', user=session['email'], data=None)
 
 
 @app.route('/onebankdatechannel', methods=["GET", "POST"])
@@ -1649,7 +1888,11 @@ def onebankdatechannel():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1673,13 +1916,14 @@ def onebankdatechannel():
             else:
                 data = SRMS.onebank_daterange_filter_by_channel(platform, startdate, enddate)
 
-            return render_template('onebankdate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('altmalldate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('onebankdate.html', user=session['email'], data=None)
+        return render_template('altmalldate.html', user=session['email'], data=None)
 
 
 @app.route('/onepaydatesentiment', methods=["GET", "POST"])
@@ -1689,7 +1933,11 @@ def onepaydatesentiment():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1714,13 +1962,14 @@ def onepaydatesentiment():
             else:
                 data = SRMS.onepay_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            return render_template('onepaydate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('altdrivedate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('onepaydate.html', user=session['email'], data=None)
+        return render_template('altdrivedate.html', user=session['email'], data=None)
 
 
 @app.route('/onepaydatechannel', methods=["GET", "POST"])
@@ -1729,7 +1978,11 @@ def onepaydatechannel():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1754,13 +2007,14 @@ def onepaydatechannel():
             else:
                 data = SRMS.onepay_daterange_filter_by_channel(platform, startdate, enddate)
 
-            return render_template('onepaydate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('altdrivedate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('onepaydate.html', user=session['email'], data=None)
+        return render_template('altdrivedate.html', user=session['email'], data=None)
 
 
 @app.route('/iinvestdatesentiment', methods=["GET", "POST"])
@@ -1770,7 +2024,11 @@ def iinvestdatesentiment():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1793,13 +2051,14 @@ def iinvestdatesentiment():
             else:
                 data = SRMS.i_invest_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            return render_template('iinvestdate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('altpaydate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('iinvestdate.html', user=session['email'], data=None)
+        return render_template('altpaydate.html', user=session['email'], data=None)
 
 
 @app.route('/iinvestdatechannel', methods=["GET", "POST"])
@@ -1808,7 +2067,11 @@ def iinvestdatechannel():
         if 'email' not in session:
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(email=session['email']).first()
+        try:
+            user = User.query.filter_by(email=session['email']).first()
+        except Exception as e:
+            print(str(e))
+            user = None
 
         if user is None:
             return redirect(url_for('login'))
@@ -1833,21 +2096,11 @@ def iinvestdatechannel():
             else:
                 data = SRMS.i_invest_daterange_filter_by_channel(platform, startdate, enddate)
 
-            return render_template('iinvestdate.html', user=session['email'], data=data, startdate=startdate, enddate=enddate)
+            return render_template('altpaydate.html', user=session['email'], data=data, startdate=startdate,
+                                   enddate=enddate)
     except Exception as e:
         print(str(e))
 
         flash("Oops something went wrong, Please try again...", "danger")
 
-        return render_template('iinvestdate.html', user=session['email'], data=None)
-
-
-
-
-
-
-
-
-
-
-
+        return render_template('altpaydate.html', user=session['email'], data=None)

@@ -1,0 +1,9 @@
+{
+    "send_diagnostics": null,
+    "diagnostics_verbosity": "INFO",
+    "automl": true,
+    "azureml.datadrift": true,
+    "azureml.opendatasets": true,
+    "azureml.dataset": true,
+    "azureml.monitoring": true
+}

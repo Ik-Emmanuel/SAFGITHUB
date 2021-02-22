@@ -1,0 +1,33 @@
+{
+  "1.0.0": [{
+      "name": "friendly_type",
+      "print_prefix": "TYPE:",
+      "print_order": 10,
+      "is_upper": false
+    },
+    {
+      "name": "result",
+      "print_prefix": "STATUS:",
+      "print_order": 20,
+      "is_upper": true
+    },
+    {
+      "name": "friendly_result",
+      "print_prefix": "DESCRIPTION:",
+      "print_order": 30,
+      "is_upper": false
+    },
+    {
+      "name": "friendly_learn_more",
+      "print_prefix": "",
+      "print_order": 40,
+      "is_upper": false
+    },
+    {
+      "name": "friendly_parameter_preface",
+      "print_prefix": "DETAILS:",
+      "print_order": 50,
+      "is_upper": false
+    }
+  ]
+}

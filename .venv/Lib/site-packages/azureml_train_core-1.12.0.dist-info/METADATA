@@ -1,0 +1,27 @@
+Metadata-Version: 2.0
+Name: azureml-train-core
+Version: 1.12.0
+Summary: azureml train core
+Home-page: https://docs.microsoft.com/python/api/overview/azure/ml/?view=azure-ml-py
+Author: Microsoft Corp
+License: https://aka.ms/azureml-sdk-license
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Framework :: IPython
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Multimedia :: Graphics
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Requires-Python: >=3.5,<4
+Description-Content-Type: text/x-rst
+Requires-Dist: azureml-train-restclients-hyperdrive (~=1.12.0)
+Requires-Dist: azureml-core (~=1.12.0)
+Requires-Dist: azureml-telemetry (~=1.12.0)
+
+The azureml-train-core contains functionality used by azureml-train metapackage.
+
+
+

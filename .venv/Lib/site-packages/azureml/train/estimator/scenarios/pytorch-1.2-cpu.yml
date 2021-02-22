@@ -1,0 +1,11 @@
+baseImage: mcr.microsoft.com/azureml/base:intelmpi2018.3-ubuntu16.04
+inlineCondaDependencies:
+  dependencies:
+  - python=3.6.2
+  - pip:
+    - azureml-defaults
+    - torch==1.2
+    - torchvision==0.4.1
+    - horovod==0.18.1
+    - tensorboard==1.14.0
+    - future==0.17.1

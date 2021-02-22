@@ -4,7 +4,7 @@ from application import db
 
 class User(db.Model):
 
-    __tablename__ = 'SRMS_users_table'
+    __tablename__ = 'SAF_users_table'
 
     user_id = db.Column(db.Integer, primary_key=True)
     firstname = db.Column(db.String(100))

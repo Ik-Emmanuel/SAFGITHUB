@@ -1,0 +1,31 @@
+Metadata-Version: 2.0
+Name: azureml-train-automl-client
+Version: 1.12.0.post1
+Summary: automl
+Home-page: https://docs.microsoft.com/python/api/overview/azure/ml/?view=azure-ml-py
+Author: Microsoft Corp
+License: https://aka.ms/azureml-sdk-license
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: Other/Proprietary License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: POSIX :: Linux
+Requires-Python: >=3.5,<4
+Description-Content-Type: text/x-rst
+Requires-Dist: azureml-automl-core (~=1.12.0)
+Requires-Dist: azureml-core (~=1.12.0)
+Requires-Dist: azureml-dataset-runtime (~=1.12.0)
+Requires-Dist: azureml-telemetry (~=1.12.0)
+
+The azureml-train-automl-client package contains functionality for automatically finding the best machine learning model and its parameters, given training and test data.
+
+
+
+

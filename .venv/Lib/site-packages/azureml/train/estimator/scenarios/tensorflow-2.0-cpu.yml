@@ -1,0 +1,9 @@
+baseImage: mcr.microsoft.com/azureml/openmpi3.1.2-ubuntu18.04:20200423.v1
+inlineCondaDependencies:
+  dependencies:
+  - python=3.6.2
+  - pip:
+    - azureml-defaults
+    - azureml-dataset-runtime[fuse,pandas]
+    - tensorflow==2.0.0
+    - horovod==0.18.1

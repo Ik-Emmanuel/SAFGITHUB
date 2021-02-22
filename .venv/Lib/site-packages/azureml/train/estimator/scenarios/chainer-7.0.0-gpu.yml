@@ -1,0 +1,9 @@
+baseImage: mcr.microsoft.com/azureml/base-gpu:intelmpi2018.3-cuda9.0-cudnn7-ubuntu16.04
+inlineCondaDependencies:
+  dependencies:
+  - python=3.6.2
+  - pip:
+    - azureml-defaults
+    - chainer==7.0.0
+    - mpi4py==3.0.0
+    - cupy-cuda90==7.0.0

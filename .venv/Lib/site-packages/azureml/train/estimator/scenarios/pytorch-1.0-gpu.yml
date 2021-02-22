@@ -1,0 +1,9 @@
+baseImage: mcr.microsoft.com/azureml/base-gpu:openmpi3.1.2-cuda10.0-cudnn7-ubuntu16.04
+inlineCondaDependencies:
+  dependencies:
+  - python=3.6.2
+  - pip:
+    - azureml-defaults
+    - torch==1.0
+    - torchvision==0.4.1
+    - horovod==0.18.1

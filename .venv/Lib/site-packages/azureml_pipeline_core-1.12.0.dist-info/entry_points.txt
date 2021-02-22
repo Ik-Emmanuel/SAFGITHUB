@@ -1,0 +1,5 @@
+[azureml_run_type_providers]
+azureml.PipelineRun = azureml.pipeline.core.run:PipelineRun._from_dto
+azureml.ReusedStepRun = azureml.pipeline.core.run:StepRun._from_reused_dto
+azureml.StepRun = azureml.pipeline.core.run:StepRun._from_dto
+

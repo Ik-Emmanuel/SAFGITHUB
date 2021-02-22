@@ -14,6 +14,7 @@ class LoginForm(FlaskForm):
     def validate(self):
 
         user = User.query.filter_by(email=self.email.data.lower()).first()
+        # print(f"user: {user}")
 
         if user and user.check_password(self.password.data):
             name = f"{user.firstname} {user.lastname}"

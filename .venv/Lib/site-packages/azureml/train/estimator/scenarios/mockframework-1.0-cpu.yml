@@ -1,0 +1,7 @@
+baseImage: mcr.microsoft.com/azureml/base:intelmpi2018.3-ubuntu16.04
+inlineCondaDependencies:
+  dependencies:
+  - python=3.6.2
+  - pip:
+    - azureml-defaults
+    - numpy==1.16.2

@@ -1,0 +1,28 @@
+Metadata-Version: 2.0
+Name: azureml-train
+Version: 1.12.0
+Summary: UNKNOWN
+Home-page: https://docs.microsoft.com/python/api/overview/azure/ml/?view=azure-ml-py
+Author: Microsoft Corp
+License: https://aka.ms/azureml-sdk-license
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: Other/Proprietary License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: POSIX :: Linux
+Requires-Python: >=3.5,<4
+Description-Content-Type: text/x-rst
+Requires-Dist: azureml-train-core (~=1.12.0)
+
+The azureml-train package provides estimators for training models using different deep learning frameworks and functionality for hyperparameter tuning using Azure cloud.
+
+
+

@@ -1,0 +1,20 @@
+{
+  "location": "",
+  "tags": null,
+  "properties": {
+    "computeType": "ComputeInstance",
+    "computeLocation": "",
+    "resourceId": "",
+    "description": "",
+    "properties": {
+      "vmSize": "",	  
+      "subnet": {
+        "id" : ""
+      },
+      "sshSettings": {
+        "sshPublicAccess": "Disabled",
+        "adminPublicKey": ""
+      }
+    }
+  }
+}

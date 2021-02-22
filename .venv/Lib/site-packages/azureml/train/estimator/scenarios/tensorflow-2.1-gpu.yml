@@ -1,0 +1,8 @@
+baseImage: mcr.microsoft.com/azureml/openmpi3.1.2-cuda10.0-cudnn7-ubuntu18.04:20200423.v1
+inlineCondaDependencies:
+  dependencies:
+  - python=3.6.2
+  - pip:
+    - azureml-defaults
+    - tensorflow-gpu==2.1.0
+    - horovod==0.19.1

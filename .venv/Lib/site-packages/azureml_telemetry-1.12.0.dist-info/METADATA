@@ -1,0 +1,22 @@
+Metadata-Version: 2.0
+Name: azureml-telemetry
+Version: 1.12.0
+Summary: telemetry
+Home-page: https://docs.microsoft.com/python/api/overview/azure/ml/?view=azure-ml-py
+Author: Microsoft Corp
+License: https://aka.ms/azureml-sdk-license
+Platform: UNKNOWN
+Requires-Python: >=3.5,<4
+Description-Content-Type: text/x-rst
+Requires-Dist: applicationinsights
+Requires-Dist: azureml-core (~=1.12.0)
+
+Microsoft Azure Machine Learning Telemetry API for Python
+=========================================================
+
+The SDK is released with backwards compatibility guarantees.
+
+Machine learning (ML) telemetry package is used to collect telemetry data.
+
+
+

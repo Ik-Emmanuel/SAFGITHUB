@@ -1,0 +1,625 @@
+# ---------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# ---------------------------------------------------------
+"""Contains functionality to manage data context of datastores and datasets. Internal use only."""
+import logging
+import os
+import re
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
+from six import raise_from
+
+module_logger = logging.getLogger(__name__)
+http_pattern = re.compile(r"^https?://", re.IGNORECASE)
+# If we are not running on Training Compute (aka BatchAI), we will by default leave 1GB free
+_free_space_required = 1024 * 1024 * 1024
+_bai_disk_buffer = 100 * 1024 * 1024
+
+
+def _log_and_print(msg):
+    module_logger.debug(msg)
+    print(msg)
+
+
+class _CommonContextManager(object):
+    """Context manager common part."""
+
+    def __init__(self, config):
+        """Class _CommonContextManager constructor.
+
+        :param config: The configuration passed to the context manager.
+        :type config: dict
+        """
+        self._config = config
+        module_logger.debug("Get config {}".format(config))
+        self._workspace = self._get_workspace()
+
+    @staticmethod
+    def _get_workspace():
+        from azureml.core.workspace import Workspace
+        from azureml.core.authentication import AzureMLTokenAuthentication
+        from azureml.exceptions import RunEnvironmentException
+
+        try:
+            # Load authentication scope environment variables
+            subscription_id = os.environ["AZUREML_ARM_SUBSCRIPTION"]
+            resource_group = os.environ["AZUREML_ARM_RESOURCEGROUP"]
+            workspace_name = os.environ["AZUREML_ARM_WORKSPACE_NAME"]
+            experiment_name = os.environ["AZUREML_ARM_PROJECT_NAME"]
+            run_id = os.environ["AZUREML_RUN_ID"]
+
+            # Initialize an AMLToken auth, authorized for the current run
+            token, token_expiry_time = AzureMLTokenAuthentication._get_initial_token_and_expiry()
+            url = os.environ["AZUREML_SERVICE_ENDPOINT"]
+            location = re.compile("//(.*?)\\.").search(url).group(1)
+        except KeyError as key_error:
+            raise_from(RunEnvironmentException(), key_error)
+        else:
+            auth = AzureMLTokenAuthentication.create(token,
+                                                     AzureMLTokenAuthentication._convert_to_datetime(
+                                                         token_expiry_time),
+                                                     url,
+                                                     subscription_id,
+                                                     resource_group,
+                                                     workspace_name,
+                                                     experiment_name,
+                                                     run_id)
+            # Disabling service check as this code executes in the remote context, without arm token.
+            workspace_object = Workspace(subscription_id, resource_group, workspace_name,
+                                         auth=auth, _location=location, _disable_service_check=True)
+            return workspace_object
+
+
+class DatasetContextManager(_CommonContextManager):
+    """Manage the context for dataset download and mount actions. This class is not intended to be used directly."""
+
+    def __init__(self, config):
+        """Class DatasetContextManager constructor.
+
+        :param config: The configuration passed to the context manager.
+        :type config: dict
+        """
+        _log_and_print("Initialize DatasetContextManager.")
+        super(self.__class__, self).__init__(config)
+        self._mount_contexts = []
+
+    def __enter__(self):
+        """Download and mount datasets."""
+        _log_and_print("Enter __enter__ of DatasetContextManager")
+        DatasetContextManager._log_session_info()
+
+        def is_input(config):
+            return bool(config.get("DataLocation"))
+
+        def is_output(config):
+            return bool(config.get("OutputLocation"))
+
+        for key, value in self._config.items():
+            _log_and_print("Processing '{}'.".format(key))
+
+            if is_input(value):
+                data_configuration = self.__class__._to_input_config(value)
+
+                if DatasetContextManager._is_download(data_configuration) or \
+                        DatasetContextManager._is_mount(data_configuration):
+                    self._mount_or_download(key, data_configuration)
+            elif is_output(value):
+                from azureml.data.constants import MOUNT_MODE
+
+                if value["Mechanism"].lower() == MOUNT_MODE:
+                    self._mount_write(key, value)
+            else:
+                from azureml.exceptions import UserErrorException
+
+                raise UserErrorException(
+                    "Invalid configuration for input/output named {}. ".format(key) +
+                    "If it is an input, please make sure the input's DataLocation property in the "
+                    "Data section is created properly and if it is an output, please make sure the "
+                    "output's OutputLocation property in the OutputData section is created properly.")
+
+        _log_and_print("Exit __enter__ of DatasetContextManager")
+
+    def __exit__(self, *exc_details):
+        """Unmount mounted datasets."""
+        _log_and_print("Enter __exit__ of DatasetContextManager")
+        for context in self._mount_contexts:
+            _log_and_print("Unmounting {}.".format(context.mount_point))
+            context.__exit__()
+            _log_and_print("Finishing unmounting {}.".format(context.mount_point))
+
+        for key, value in self._config.items():
+            from azureml.data.constants import UPLOAD_MODE
+
+            if value["Mechanism"].lower() == UPLOAD_MODE:
+                _log_and_print("Uploading output '{}'.".format(key))
+                self._upload(key, value)
+
+        _log_and_print("Exit __exit__ of DatasetContextManager")
+
+    def _mount_or_download(self, name, data_configuration):
+        from azureml.data._dataset import _Dataset
+        from azureml.data.file_dataset import FileDataset
+
+        if data_configuration.data_location.dataset.id:
+            dataset = _Dataset._get_by_id(self._workspace, data_configuration.data_location.dataset.id)
+        else:
+            dataset = _Dataset._get_by_name(self._workspace, data_configuration.data_location.dataset.name,
+                                            data_configuration.data_location.dataset.version)
+        _log_and_print("Processing dataset {}".format(dataset))
+
+        if not isinstance(dataset, FileDataset):
+            from azureml.exceptions import UserErrorException
+
+            mechanism = data_configuration.mechanism
+            raise UserErrorException(
+                "Unable to {} dataset because the input {} is not a FileDataset but instead ".format(mechanism, name) +
+                "a {}. Please make sure you pass a FileDataset.".format(type(dataset).__name__)
+            )
+
+        if self.__class__._try_convert_to_data_reference(name, dataset, data_configuration):
+            return
+
+        # only file dataset can be downloaded or mount.
+        # The second part of the or statement below is to keep backwards compatibility until the execution
+        # service change has been deployed to all regions.
+        target_path = os.environ.get(data_configuration.environment_variable_name) or \
+            os.environ.get(data_configuration.environment_variable_name.upper())
+        if self._is_download(data_configuration):
+            overwrite = data_configuration.overwrite
+            self.__class__._download_dataset(name, dataset, target_path, overwrite)
+            action = "Downloaded"
+        elif self._is_mount(data_configuration):
+            self._mount_readonly(name, dataset, target_path)
+            action = "Mounted"
+        is_single = self.__class__._try_update_env_var_for_single_file(
+            data_configuration.environment_variable_name, dataset)
+        _log_and_print("{} {} to {} as {}.".format(
+            action, name, target_path, 'single file' if is_single else 'folder'))
+
+    def _mount_readonly(self, name, dataset, target_path):
+        from azureml.data._dataprep_helper import dataprep_fuse
+        from azureml.data.constants import _SKIP_VALIDATE_DATASETS
+
+        free_space_required = self.__class__._get_required_free_space()
+
+        if not os.path.exists(target_path):
+            os.makedirs(target_path)
+
+        _log_and_print("Mounting {} to {}.".format(name, target_path))
+
+        mount_options = dataprep_fuse().MountOptions(free_space_required=free_space_required)
+        skip_validate_datasets = os.environ.get(_SKIP_VALIDATE_DATASETS, "").split(",")
+        skip_validate = dataset.name in skip_validate_datasets
+
+        context_manager = dataset.mount(mount_point=target_path,
+                                        mount_options=mount_options,
+                                        skip_validate=skip_validate)
+        context_manager.__enter__()
+
+        self._mount_contexts.append(context_manager)
+
+    @staticmethod
+    def _to_input_config(config):
+        from azureml.core.runconfig import Data, DataLocation, Dataset
+        data_location_json = config.get("DataLocation", None)
+        dataset_json = data_location_json.get("Dataset", None) if data_location_json else None
+        dataset_id = dataset_json.get("Id") if dataset_json else None
+        dataset_name = dataset_json.get("Name") if dataset_json else None
+        dataset_version = dataset_json.get("Version") if dataset_json else None
+        dataset = Dataset(dataset_id=dataset_id, dataset_name=dataset_name, dataset_version=dataset_version)
+        data_location = DataLocation(dataset=dataset)
+        create_output_directories = config.get("CreateOutputDirectories", False)
+        mechanism = config.get("Mechanism", None).lower()
+        environment_variable_name = config.get("EnvironmentVariableName", None)
+        path_on_compute = config.get("PathOnCompute", None)
+        overwrite = config.get("Overwrite", False)
+        return Data(data_location=data_location,
+                    create_output_directories=create_output_directories,
+                    mechanism=mechanism,
+                    environment_variable_name=environment_variable_name,
+                    path_on_compute=path_on_compute,
+                    overwrite=overwrite)
+
+    def _mount_write(self, name, config):
+        import uuid
+        from azureml.data._dataprep_helper import dataprep_fuse
+
+        destination = self._get_datastore_and_path(config)
+        src_path = self.__class__._get_path_on_compute(config)
+        invocation_id = str(uuid.uuid4())
+        context = dataprep_fuse().mount(
+            dataflow=None, files_column=None, mount_point=src_path, invocation_id=invocation_id, foreground=False,
+            destination=destination
+        )
+
+        context.__enter__()
+        _log_and_print("Mounted {} to {}.".format(name, src_path))
+        self._mount_contexts.append(context)
+        self._register_output(name, destination, config)
+
+    def _upload(self, name, config):
+        from azureml.data._dataprep_helper import dataprep
+
+        def get_upload_options():
+            additional_options = config["AdditionalOptions"]
+            upload_options = additional_options.get("UploadOptions", {})
+            glob_options = upload_options.get("SourceGlobs", {}) or {}
+            return upload_options.get("Overwrite"), glob_options.get("GlobPatterns")
+
+        def upload(src_path, destination, glob_patterns, overwrite):
+            engine_api = dataprep().api.engineapi.api.get_engine_api()
+            dest_si = dataprep().api._datastore_helper._to_stream_info_value(destination[0], destination[1])
+            glob_patterns = glob_patterns or None
+            engine_api.upload_directory(
+                dataprep().api.engineapi.typedefinitions.UploadDirectoryMessageArguments(
+                    base_path=src_path, destination=dest_si, folder_path=src_path, glob_patterns=glob_patterns,
+                    overwrite=overwrite
+                )
+            )
+
+        destination = self._get_datastore_and_path(config)
+        src_path = self.__class__._get_path_on_compute(config)
+        overwrite, globs = get_upload_options()
+
+        upload(src_path, destination, globs, overwrite)
+        self._register_output(name, destination, config)
+
+    def _register_output(self, run_name, dest, config):
+        from azureml.core import Dataset
+
+        def save_lineage(dataset, mode):
+            from azureml._restclient.models import OutputDatasetLineage, DatasetIdentifier, DatasetOutputType, \
+                DatasetOutputDetails, DatasetOutputMechanism
+            from azureml.core import Run
+            from azureml.data.constants import MOUNT_MODE
+
+            id = dataset.id
+            registered_id = dataset._registration and dataset._registration.registered_id
+            version = dataset.version
+            dataset_id = DatasetIdentifier(id, registered_id, version)
+            output_details = DatasetOutputDetails(
+                run_name,
+                DatasetOutputMechanism.mount if mode.lower() == MOUNT_MODE else DatasetOutputMechanism.upload
+            )
+            output_lineage = OutputDatasetLineage(dataset_id, DatasetOutputType.run_output, output_details)
+
+            try:
+                run = Run.get_context()
+                run._update_output_dataset_lineage([output_lineage])
+            except:
+                module_logger.error("Failed to update output dataset lineage")
+
+        additional_options = config["AdditionalOptions"]
+        registration_options = additional_options.get("RegistrationOptions") or {}
+        name = registration_options.get("Name")
+        description = registration_options.get("Description")
+        tags = registration_options.get("Tags")
+        dataset_registration = registration_options.get("DatasetRegistrationOptions") or {}
+        dataflow = dataset_registration.get("AdditionalTransformation")
+
+        dataset = Dataset.File.from_files(dest, False)
+        if dataflow:
+            import azureml.dataprep as dprep
+            from azureml.data import TabularDataset, FileDataset
+            from azureml.data._dataprep_helper import is_tabular
+
+            transformations = dprep.Dataflow.from_json(dataflow)
+            combined = dprep.Dataflow(
+                transformations._engine_api,
+                dataset._dataflow._get_steps() + transformations._get_steps()
+            )
+            dataset = TabularDataset._create(combined) if is_tabular(transformations)\
+                else FileDataset._create(combined)
+        if name:
+            dataset = dataset._register(self._workspace, name, description, tags, True)
+        else:
+            dataset._ensure_saved_internal(self._workspace)
+
+        save_lineage(dataset, config["Mechanism"])
+
+    def _get_datastore_and_path(self, config):
+        from azureml.core import Datastore
+
+        output_location = config["OutputLocation"]
+        data_path = output_location["DataPath"]
+        datastore = Datastore(self._workspace, data_path["DatastoreName"])
+
+        return datastore, data_path["RelativePath"]
+
+    @staticmethod
+    def _get_path_on_compute(config):
+        additional_options = config["AdditionalOptions"]
+        return additional_options["PathOnCompute"]
+
+    @staticmethod
+    def _get_datastores_of_dataset(in_ds):
+        """Get data stores from file dataset."""
+        steps = in_ds._dataflow._get_steps()
+        if steps[0].step_type == "Microsoft.DPrep.GetDatastoreFilesBlock":
+            return steps[0].arguments["datastores"]
+        return None
+
+    @staticmethod
+    def _is_download(data_configuration):
+        from azureml.data.constants import DOWNLOAD_MODE
+        return data_configuration.mechanism.lower() == DOWNLOAD_MODE
+
+    @staticmethod
+    def _is_mount(data_configuration):
+        from azureml.data.constants import MOUNT_MODE
+        return data_configuration.mechanism.lower() == MOUNT_MODE
+
+    @staticmethod
+    def _try_update_env_var_for_single_file(env_name, dataset):
+        if not DatasetContextManager._is_single_file_no_transform(dataset):
+            return False
+        path = dataset.to_path()[0]
+        os.environ[env_name] = os.environ[env_name].rstrip('/\\')
+        os.environ[env_name] += path
+
+        # the line below is here to keep backwards compatibility with data reference usage
+        os.environ['AZUREML_DATAREFERENCE_{}'.format(env_name)] = os.environ[env_name]
+        # the line below is to make sure run.input_datasets return the correct path
+        os.environ[env_name.upper()] = os.environ[env_name]
+        return True
+
+    @staticmethod
+    def _update_env_var_if_datareference_exists(dataset_name, datareference_path):
+        os.environ[dataset_name] = datareference_path
+        # the line below is here to keep backwards compatibility with data reference usage
+        os.environ["AZUREML_DATAREFERENCE_{}".format(dataset_name.lower())] = datareference_path
+        # the line below is to make sure run.input_datasets return the correct path
+        os.environ[dataset_name.upper()] = datareference_path
+
+    @staticmethod
+    def _is_single_file_no_transform(dataset):
+        steps = dataset._dataflow._get_steps()
+
+        # if there is more than one step, we are going to naively assume that the resulting number of files is
+        # nondeterministic
+        if len(steps) > 1:
+            return False
+
+        first_step = steps[0]
+        argument = first_step.arguments
+        try:
+            argument = argument.to_pod()
+        except AttributeError:
+            pass
+
+        from azureml.data._dataset import _get_path_from_step
+        original_path = _get_path_from_step(first_step.step_type, argument)
+        if not original_path:
+            return False
+
+        if http_pattern.match(original_path):
+            url = urlparse(original_path)
+            original_path = url.path
+
+        temp_column = "Temp Portable Path"
+        from azureml.data._dataprep_helper import dataprep
+        dataflow = dataset._dataflow.take(1).add_column(
+            dataprep().api.functions.get_portable_path(dataprep().api.expressions.col("Path")), temp_column, "Path")
+        path = dataflow._to_pyrecords()[0][temp_column]
+
+        return path.strip("/").endswith(original_path.replace("\\", "/").strip("/"))
+
+    @staticmethod
+    def _get_required_free_space():
+        # AZ_BATCH_RESERVED_DISK_SPACE_BYTES is set in BatchAI which is the minimum required disk space
+        # before the node will become unusable. Adding 100MB on top of that to be safe
+        free_space_required = _free_space_required
+        bai_reserved_disk_space = os.environ.get("AZ_BATCH_RESERVED_DISK_SPACE_BYTES")
+        if bai_reserved_disk_space:
+            free_space_required = int(bai_reserved_disk_space) + _bai_disk_buffer
+        return free_space_required
+
+    @staticmethod
+    def _try_convert_to_data_reference(name, dataset, data_configuration):
+        # Handle Datasets converted to DataReference
+        # See if this Dataset has any Datastores
+        datastores = DatasetContextManager._get_datastores_of_dataset(dataset)
+        # Check if a DataReference variable exists for Datastores in this Dataset
+        dataset_as_dataref = []
+        if datastores is not None:
+            for dstore_index, dstore in enumerate(datastores):
+                var = "AZUREML_DATAREFERENCE_{}_{}".format(
+                    data_configuration.environment_variable_name, dstore_index)
+                module_logger.debug("Looking for variable: {}".format(var))
+                var_val = os.environ.get(var)
+                module_logger.debug("Variable value: {}".format(var_val))
+                if var_val is not None:
+                    dataset_as_dataref.append(var_val)
+        converted = len(dataset_as_dataref) > 0
+        if converted:
+            dataref_paths = ";".join(dataset_as_dataref)
+            module_logger.debug("Dataset '{}' converted to DataReference.".format(
+                data_configuration.environment_variable_name))
+            module_logger.debug("Set {}={}, skipping mount.".format(
+                data_configuration.environment_variable_name.upper(), dataref_paths))
+            DatasetContextManager._update_env_var_if_datareference_exists(
+                data_configuration.environment_variable_name, dataref_paths)
+            _log_and_print("Mounted {} to {}".format(name, dataref_paths))
+            # This dataset was converted to a DataReference so don't mount/download it.
+        return converted
+
+    @staticmethod
+    def _download_dataset(name, dataset, target_path, overwrite):
+        _log_and_print("Downloading {} to {}".format(name, target_path))
+        dataset.download(target_path=target_path, overwrite=overwrite)
+
+    @staticmethod
+    def _log_session_info():
+        from pkg_resources import get_distribution
+        try:
+            core_version = get_distribution('azureml-core').version
+        except:
+            # this should never fail as the code path is not hit for CLI usage, but just to be safe
+            from azureml.core import VERSION as core_version
+        try:
+            dataprep_version = get_distribution('azureml-dataprep').version
+        except:
+            try:
+                from azureml.dataprep import __version__ as dataprep_version
+            except:
+                # it is possible to have no azureml-dataprep installed
+                dataprep_version = ''
+        try:
+            from azureml._base_sdk_common import _ClientSessionId as session_id
+        except:
+            session_id = None
+        run_id = os.environ.get('AZUREML_RUN_ID')
+        _log_and_print("SDK version: azureml-core=={} azureml-dataprep=={}. Session id: {}. Run id: {}.".format(
+            core_version,
+            dataprep_version,
+            session_id if session_id else '(telemetry disabled)',
+            run_id
+        ))
+
+
+class DatastoreContextManager(_CommonContextManager):
+    """Manage the context for datastore upload and download actions. This class is not intended to be used directly."""
+
+    def __init__(self, config):
+        """Class DatastoreContextManager constructor.
+
+        :param config: The configuration passed to the context manager.
+        :type config: dict
+        """
+        module_logger.debug("Initialize DatastoreContextManager.")
+        super(self.__class__, self).__init__(config)
+
+    def __enter__(self):
+        """Download files for datastore.
+
+        :return:
+        """
+        module_logger.debug("Enter __enter__ function of datastore cmgr")
+        from azureml.core import Datastore, Dataset
+        for key, value in self._config.items():
+            df_config = self._to_data_reference_config(value)
+            if self._is_upload(df_config):
+                if df_config.path_on_compute:
+                    dir_to_create = os.path.normpath(os.path.dirname(df_config.path_on_compute))
+                    if dir_to_create:
+                        os.makedirs(dir_to_create, exist_ok=True)
+            else:
+                target_path = df_config.data_store_name
+                if df_config.path_on_compute:
+                    target_path = os.path.join(df_config.data_store_name, df_config.path_on_compute)
+                    # The target_path is always set using the data store name with no way
+                    # for the user to overwrite this behavior. The user might attempt to use ../ in
+                    # the path on compute as a solution but this throws an exception
+                    # because the path is not normalized.
+                    # Normalizing the path to allow the user to use up-level references.
+                    target_path = os.path.normpath(target_path)
+                if self._is_download(df_config):
+                    self._validate_config(df_config, key)
+                    ds = Datastore(workspace=self._workspace, name=df_config.data_store_name)
+                    if self._is_datastore_adlsgen1(ds):
+                        _log_and_print("AzureDataLake Gen1 used as Datastore for download")
+                        if df_config.path_on_data_store is None:
+                            df_config.path_on_data_store = ""
+                        Dataset.File.from_files((ds, df_config.path_on_data_store)).download(
+                            os.path.join(target_path, df_config.path_on_data_store),
+                            overwrite=df_config.overwrite)
+                    else:
+                        count = ds.download(
+                            target_path=target_path,
+                            prefix=df_config.path_on_data_store,
+                            overwrite=df_config.overwrite)
+                        if count == 0:
+                            import warnings
+                            warnings.warn("Downloaded 0 files from datastore {} with path {}.".format(
+                                ds.name, df_config.path_on_data_store
+                            ))
+                else:
+                    os.makedirs(target_path, exist_ok=True)
+
+        module_logger.debug("Exit __enter__ function of datastore cmgr")
+
+    def __exit__(self, *exc_details):
+        """Upload files for datastore.
+
+        :param exc_details:
+        :return:
+        """
+        from azureml.core.datastore import Datastore
+        from azureml.data._dataprep_helper import dataprep
+
+        module_logger.debug("Enter __exit__ function of datastore cmgr")
+        for key, value in self._config.items():
+            df_config = self._to_data_reference_config(value)
+            if self._is_upload(df_config):
+                self._validate_config(df_config, key)
+                ds = Datastore(workspace=self._workspace, name=df_config.data_store_name)
+                if os.path.isdir(df_config.path_on_compute):
+                    if self._is_datastore_adlsgen1(ds):
+                        module_logger.debug("AzureDataLake Gen1 used as Datastore for upload dir.")
+                        dataprep().api.engineapi.api.get_engine_api().upload_directory(
+                            dataprep().api.engineapi.typedefinitions.UploadDirectoryMessageArguments(
+                                base_path=df_config.path_on_compute,
+                                folder_path=df_config.path_on_compute,
+                                destination=dataprep().api._datastore_helper._to_stream_info_value(
+                                    ds,
+                                    df_config.path_on_data_store),
+                                overwrite=df_config.overwrite,
+                                concurrent_task_count=1))
+                    else:
+                        ds.upload(
+                            src_dir=df_config.path_on_compute,
+                            target_path=df_config.path_on_data_store,
+                            overwrite=df_config.overwrite)
+                elif os.path.isfile(df_config.path_on_compute):
+                    if self._is_datastore_adlsgen1(ds):
+                        module_logger.debug("AzureDataLake Gen1 used as Datastore for upload file.")
+                        dataprep().api.engineapi.api.get_engine_api().upload_file(
+                            dataprep().api.engineapi.typedefinitions.UploadFileMessageArguments(
+                                base_path=os.path.dirname(df_config.path_on_compute),
+                                local_path=df_config.path_on_compute,
+                                destination=dataprep().api._datastore_helper._to_stream_info_value(
+                                    ds,
+                                    df_config.path_on_data_store),
+                                overwrite=df_config.overwrite))
+                    else:
+                        ds.upload_files(
+                            files=[df_config.path_on_compute],
+                            target_path=df_config.path_on_data_store,
+                            overwrite=df_config.overwrite)
+        module_logger.debug("Exit __exit__ function of datastore cmgr")
+
+    def _validate_config(self, data_reference, key):
+        from azureml.exceptions import UserErrorException
+        if not data_reference.data_store_name:
+            raise UserErrorException("DataReference {} misses the datastore name".format(key))
+        if self._is_upload(data_reference) and not data_reference.path_on_compute:
+            raise UserErrorException("DataReference {} misses the relative path on the compute".format(key))
+
+    @staticmethod
+    def _to_data_reference_config(config):
+        from azureml.core.runconfig import DataReferenceConfiguration
+        from azureml.data.constants import MOUNT_MODE
+        return DataReferenceConfiguration(
+            datastore_name=config.get("DataStoreName", None),
+            mode=config.get("Mode", MOUNT_MODE).lower(),
+            path_on_datastore=config.get("PathOnDataStore", None),
+            path_on_compute=config.get("PathOnCompute", None),
+            overwrite=config.get("Overwrite", False))
+
+    @staticmethod
+    def _is_download(data_reference):
+        from azureml.data.constants import DOWNLOAD_MODE
+        return data_reference.mode.lower() == DOWNLOAD_MODE
+
+    @staticmethod
+    def _is_upload(data_reference):
+        from azureml.data.constants import UPLOAD_MODE
+        return data_reference.mode.lower() == UPLOAD_MODE
+
+    @staticmethod
+    def _is_datastore_adlsgen1(data_store):
+        # https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.data.azure_data_lake_datastore.abstractadlsdatastore?view=azure-ml-py
+        return data_store.datastore_type.lower() == "azuredatalake"

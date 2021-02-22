@@ -1,0 +1,777 @@
+# ---------------------------------------------------------
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# ---------------------------------------------------------
+
+"""Contains functionality to add a step to run user script in parallel mode on multiple AmlCompute targets."""
+import logging
+import re
+import json
+import uuid
+import os
+import sys
+import warnings
+from itertools import chain
+
+import azureml.core
+from azureml.core import Workspace
+from azureml.core.runconfig import RunConfiguration
+from azureml.core.compute import AmlCompute
+from azureml.core.conda_dependencies import CondaDependencies
+from azureml.core.datastore import Datastore
+from azureml.data import TabularDataset, FileDataset
+from azureml.data.abstract_dataset import AbstractDataset
+from azureml.data.azure_storage_datastore import AzureBlobDatastore
+from azureml.data.data_reference import DataReference
+from azureml.data.dataset_consumption_config import DatasetConsumptionConfig
+from azureml.data.output_dataset_config import OutputTabularDatasetConfig, OutputFileDatasetConfig, OutputDatasetConfig
+from azureml.pipeline.core._parallel_run_config_base import _ParallelRunConfigBase
+from azureml.pipeline.core._python_script_step_base import _PythonScriptStepBase
+from azureml.pipeline.core.graph import PipelineParameter
+from azureml.pipeline.core.graph import ParamDef
+from azureml.pipeline.core.pipeline_output_dataset import PipelineOutputFileDataset
+from azureml.pipeline.core.pipeline_output_dataset import PipelineOutputTabularDataset
+from azureml.pipeline.core.builder import PipelineData
+
+DEFAULT_BATCH_SCORE_MAIN_FILE_NAME = "driver/amlbi_main.py"
+DEFAULT_MINI_BATCH_SIZE = 1
+DEFAULT_MINI_BATCH_SIZE_FILEDATASET = 10
+DEFAULT_MINI_BATCH_SIZE_TABULARDATASET = 1024 * 1024
+FILE_TYPE_INPUT = "file"
+TABULAR_TYPE_INPUT = "tabular"
+REQUIRED_DATAPREP_EXTRAS = {
+    TABULAR_TYPE_INPUT: "fuse,pandas",
+    FILE_TYPE_INPUT: "fuse",
+}
+ALLOWED_INPUT_TYPES = (DatasetConsumptionConfig, PipelineOutputFileDataset, PipelineOutputTabularDataset,
+                       OutputFileDatasetConfig, OutputTabularDatasetConfig)
+INPUT_TYPE_DICT = {
+    TabularDataset: TABULAR_TYPE_INPUT,
+    PipelineOutputTabularDataset: TABULAR_TYPE_INPUT,
+    OutputTabularDatasetConfig: TABULAR_TYPE_INPUT,
+    FileDataset: FILE_TYPE_INPUT,
+    PipelineOutputFileDataset: FILE_TYPE_INPUT,
+    OutputFileDatasetConfig: FILE_TYPE_INPUT,
+}
+PARALLEL_RUN_VERSION = "v1"
+PARALLEL_RUN_PLATFORM = "linux"
+
+# current packages which also install azureml-dataprep[fuse,pandas]
+DATAPREP_FUSE_PANDAS_PACKAGES = ["azureml-dataprep[fuse,pandas]",
+                                 "azureml-dataprep[pandas,fuse]",
+                                 "azureml-automl-runtime",
+                                 "azureml-contrib-dataset",
+                                 "azureml-datadrift",
+                                 "azureml-dataset-runtime[pandas,fuse]",
+                                 "azureml-dataset-runtime[fuse,pandas]",
+                                 "azureml-opendatasets",
+                                 "azureml-train-automl",
+                                 "azureml-train-automl-runtime"]
+
+# current packages which also install azureml-dataprep[fuse]
+DATAPREP_FUSE_ONLY_PACKAGES = ["azureml-dataprep[fuse]",
+                               "azureml-dataset-runtime[fuse]",
+                               "azureml-defaults",
+                               "azureml-sdk"]
+
+DATAPREP_FUSE_PACKAGES = list(chain(DATAPREP_FUSE_PANDAS_PACKAGES, DATAPREP_FUSE_ONLY_PACKAGES))
+
+REQUIRED_DATAPREP_PACKAGES = {
+    TABULAR_TYPE_INPUT: DATAPREP_FUSE_PANDAS_PACKAGES,
+    FILE_TYPE_INPUT: DATAPREP_FUSE_PACKAGES,
+}
+
+
+class _ParallelRunStepBase(_PythonScriptStepBase):
+    r"""
+    Creates an Azure Machine Learning Pipeline step to process large amounts of data asynchronously and in parallel.
+
+    For an example of using ParallelRunStep, see the notebook https://aka.ms/batch-inference-notebooks.
+
+    .. remarks::
+
+        _ParallelRunStepBase can be used for processing large amounts of data in parallel. Common use cases are
+        training an ML model or running offline inference to generate predictions on a batch of observations.
+        _ParallelRunStepBase works by breaking up your data into batches that are processed in parallel. The batch
+        size node count, and other tunable parameters to speed up your parallel processing can be controlled with
+        the :class:`azureml.pipeline.steps.ParallelRunConfig` class. _ParallelRunStepBase can work with either
+        :class:`azureml.data.TabularDataset` or :class:`azureml.data.FileDataset` as input.
+
+        To use _ParallelRunStepBase:
+
+        * Create a :class:`azureml.pipeline.steps.ParallelRunConfig` object to specify how batch
+          processing is performed, with parameters to control batch size, number of nodes per compute target,
+          and a reference to your custom Python script.
+
+        * Create a _ParallelRunStepBase object that uses the ParallelRunConfig object, define inputs and
+          outputs for the step.
+
+        * Use the configured _ParallelRunStepBase object in a :class:`azureml.pipeline.core.Pipeline`
+          just as you would with pipeline step types defined in the :mod:`azureml.pipeline.steps` package.
+
+        Examples of working with _ParallelRunStepBase and ParallelRunConfig classes for batch inference are
+        discussed in the following articles:
+
+        * `Tutorial: Build an Azure Machine Learning pipeline for batch
+          scoring <https://docs.microsoft.com/azure/machine-learning/tutorial-pipeline-batch-scoring-classification>`_.
+          This article shows how to use these two classes for asynchronous batch scoring in a pipeline and enable a
+          REST endpoint to run the pipeline.
+
+        * `Run batch inference on large amounts of data by using Azure Machine
+          Learning <https://docs.microsoft.com/azure/machine-learning/how-to-use-parallel-run-step>`_. This article
+          shows how to process large amounts of data asynchronously and in parallel with a custom inference script
+          and a pre-trained image classification model bases on the MNIST dataset.
+
+        .. code:: python
+
+            from azureml.pipeline.steps import ParallelRunStep, ParallelRunConfig
+
+            parallel_run_config = ParallelRunConfig(
+                source_directory=scripts_folder,
+                entry_script=script_file,
+                mini_batch_size="5",
+                error_threshold=10,
+                output_action="append_row",
+                environment=batch_env,
+                compute_target=compute_target,
+                node_count=2)
+
+            parallelrun_step = ParallelRunStep(
+                name="predict-digits-mnist",
+                parallel_run_config=parallel_run_config,
+                inputs=[ named_mnist_ds ],
+                output=output_dir,
+                arguments=[ "--extra_arg", "example_value" ],
+                allow_reuse=True
+            )
+
+        For more information about this example, see the notebook https://aka.ms/batch-inference-notebooks.
+
+    :param name: Name of the step. Must be unique to the workspace, only consist of lowercase letters,
+        numbers, or dashes, start with a letter, and be between 3 and 32 characters long.
+    :type name: str
+    :param parallel_run_config: A _ParallelRunConfigBase object used to determine required run properties.
+    :type parallel_run_config: azureml.pipeline.core._ParallelRunConfigBase
+    :param inputs: List of input datasets. All datasets in the list should be of same type.
+        Input data will be partitioned for parallel processing.
+    :type inputs: list[azureml.data.dataset_consumption_config.DatasetConsumptionConfig
+                    or azureml.data.dataset_consumption_config.PipelineOutputFileDataset
+                    or azureml.data.dataset_consumption_config.PipelineOutputTabularDataset]
+    :param output: Output port binding, may be used by later pipeline steps.
+    :type output: azureml.pipeline.core.builder.PipelineData, azureml.pipeline.core.graph.OutputPortBinding
+    :param side_inputs: List of side input reference data. Side inputs will not be partitioned as input data.
+    :type side_inputs: list[azureml.pipeline.core.graph.InputPortBinding
+                    or azureml.data.data_reference.DataReference
+                    or azureml.pipeline.core.PortDataReference
+                    or azureml.pipeline.core.builder.PipelineData
+                    or azureml.pipeline.core.pipeline_output_dataset.PipelineOutputFileDataset
+                    or azureml.pipeline.core.pipeline_output_dataset.PipelineOutputTabularDataset
+                    or azureml.data.dataset_consumption_config.DatasetConsumptionConfig]
+    :param arguments: List of command-line arguments to pass to the Python entry_script.
+    :type arguments: list[str]
+    :param allow_reuse: Whether the step should reuse previous results when run with the same settings/inputs.
+        If this is false, a new run will always be generated for this step during pipeline execution.
+    :type allow_reuse: bool
+    """
+
+    def __init__(
+            self,
+            name,
+            parallel_run_config,
+            inputs,
+            output=None,
+            side_inputs=None,
+            arguments=None,
+            allow_reuse=True,
+    ):
+        r"""Create an Azure ML Pipeline step to process large amounts of data asynchronously and in parallel.
+
+        For an example of using ParallelRunStep, see the notebook link https://aka.ms/batch-inference-notebooks.
+
+        :param name: Name of the step. Must be unique to the workspace, only consist of lowercase letters,
+            numbers, or dashes, start with a letter, and be between 3 and 32 characters long.
+        :type name: str
+        :param parallel_run_config: A ParallelRunConfig object used to determine required run properties.
+        :type parallel_run_config: azureml.pipeline.steps.ParallelRunConfig
+        :param inputs: List of input datasets. All datasets in the list should be of same type.
+            Input data will be partitioned for parallel processing.
+        :type inputs: list[azureml.data.dataset_consumption_config.DatasetConsumptionConfig
+                        or azureml.data.dataset_consumption_config.PipelineOutputFileDataset
+                        or azureml.data.dataset_consumption_config.PipelineOutputTabularDataset]
+        :param output: Output port binding, may be used by later pipeline steps.
+        :type output: azureml.pipeline.core.builder.PipelineData, azureml.pipeline.core.graph.OutputPortBinding
+        :param side_inputs: List of side input reference data. Side inputs will not be partitioned as input data.
+        :type side_inputs: list[azureml.pipeline.core.graph.InputPortBinding
+                        or azureml.data.data_reference.DataReference
+                        or azureml.pipeline.core.PortDataReference
+                        or azureml.pipeline.core.builder.PipelineData
+                        or azureml.pipeline.core.pipeline_output_dataset.PipelineOutputFileDataset
+                        or azureml.pipeline.core.pipeline_output_dataset.PipelineOutputTabularDataset
+                        or azureml.data.dataset_consumption_config.DatasetConsumptionConfig]
+        :param arguments: List of command-line arguments to pass to the Python entry_script.
+        :type arguments: list[str]
+        :param allow_reuse: Whether the step should reuse previous results when run with the same settings/inputs.
+            If this is false, a new run will always be generated for this step during pipeline execution.
+        :type allow_reuse: bool
+        """
+        self._name = name
+        self._parallel_run_config = parallel_run_config
+        self._inputs = inputs
+        self._output = output
+        self._side_inputs = side_inputs
+        self._arguments = arguments
+        self._node_count = self._parallel_run_config.node_count
+        self._process_count_per_node = self._parallel_run_config.process_count_per_node
+        self._mini_batch_size = self._parallel_run_config.mini_batch_size
+        self._error_threshold = self._parallel_run_config.error_threshold
+        self._logging_level = self._parallel_run_config.logging_level
+        self._run_invocation_timeout = self._parallel_run_config.run_invocation_timeout
+        self._run_max_try = self._parallel_run_config.run_max_try
+        self._input_compute_target = self._parallel_run_config.compute_target
+        self._pystep_inputs = []
+        self._pystep_side_inputs = []
+        self._input_ds_type = None
+        self._glob_syntax_pattern = re.compile(r"[\^\\\$\|\?\*\+\(\)\[\]\{\}]")
+        self._module_logger = logging.getLogger(__name__)
+
+        self._process_inputs_output_dataset_configs()
+        self._validate()
+        self._get_pystep_inputs()
+
+        if self._side_inputs:
+            self._handle_side_inputs()
+
+        pipeline_runconfig_params = self._get_pipeline_runconfig_params()
+        prun_runconfig = self._generate_runconfig()
+        prun_main_file_args = self._generate_main_file_args()
+
+        if self._side_inputs:
+            self._pystep_inputs += self._pystep_side_inputs
+
+        compute_target = self._input_compute_target
+        if isinstance(compute_target, str):
+            compute_target = (compute_target, AmlCompute._compute_type)
+
+        super(_ParallelRunStepBase, self).__init__(
+            name=self._name,
+            source_directory=self._parallel_run_config.source_directory,
+            script_name=self._parallel_run_config.entry_script,
+            runconfig=prun_runconfig,
+            runconfig_pipeline_params=pipeline_runconfig_params,
+            arguments=prun_main_file_args,
+            compute_target=compute_target,
+            inputs=self._pystep_inputs,
+            outputs=self._output,
+            allow_reuse=allow_reuse,
+        )
+
+    def _validate(self):
+        """Validate input params to init parallel run step class."""
+        self._validate_name()
+        self._validate_arguments()
+        self._validate_inputs()
+        self._validate_output()
+        self._validate_parallel_run_config()
+        self._validate_source_directory()
+        self._validate_entry_script()
+
+    def _validate_name(self):
+        """Validate step name."""
+        name_length = len(self._name)
+        if name_length < 3 or name_length > 32:
+            raise Exception("Step name must have 3-32 characters")
+
+        pattern = re.compile("^[a-z]([-a-z0-9]*[a-z0-9])?$")
+        if not pattern.match(self._name):
+            raise Exception("Step name must follow regex rule ^[a-z]([-a-z0-9]*[a-z0-9])?$")
+
+    def _validate_arguments(self):
+        """Validate the additional arguments."""
+        reserved_args = [
+            "mini_batch_size",
+            "error_threshold",
+            "output",
+            "output_action",
+            "logging_level",
+            "process_count_per_node",
+            "run_invocation_timeout",
+            "run_max_try",
+            "append_row_file_name",
+        ]
+        if not self._arguments:
+            return
+
+        # Ensure the first one start with "-"
+        if not self._arguments[0].startswith("-"):
+            raise ValueError(
+                "Found invalid argument '{}'."
+                " As your arguments will be merged with reserved argument,"
+                " you can only use keyword argument.".format(self._arguments[0])
+            )
+
+        for item in self._arguments:
+            # Check argument with "--"
+            if isinstance(item, str) and item.startswith("--"):
+                name = item[2:]
+                parts = name.split("=")
+                if len(parts) > 1:
+                    name = parts[0]
+
+                if name in reserved_args:
+                    raise ValueError(
+                        "'{}' is a reserved argument in ParallelRunStep, "
+                        "please use another argument name instead.".format(name)
+                    )
+
+    def _get_input_type(self, in_ds):
+        input_type = type(in_ds)
+        ds_mapping_type = None
+        if input_type == DatasetConsumptionConfig:
+            # Dataset mode needs to be direct except when we convert it to data reference.
+            # This will be removed in next release.
+            real_ds_obj = in_ds.dataset
+            if isinstance(in_ds.dataset, PipelineParameter):
+                real_ds_obj = in_ds.dataset.default_value
+            if (isinstance(real_ds_obj, TabularDataset) or isinstance(real_ds_obj, OutputTabularDatasetConfig))\
+                    and in_ds.mode != "direct":
+                raise Exception("Please ensure input dataset consumption mode is direct")
+            ds_mapping_type = INPUT_TYPE_DICT[type(real_ds_obj)]
+        elif input_type == PipelineOutputFileDataset or input_type == PipelineOutputTabularDataset:
+            # Dataset mode needs to be direct except when we convert it to data reference.
+            # This will be removed in next release.
+            if input_type == PipelineOutputTabularDataset and in_ds._input_mode != "direct":
+                raise Exception("Please ensure pipeline input dataset consumption mode is direct")
+            ds_mapping_type = INPUT_TYPE_DICT[input_type]
+        else:
+            raise Exception(
+                "Step input must be of any type: {}, found {}".format(INPUT_TYPE_DICT.keys(), input_type)
+            )
+        return ds_mapping_type
+
+    def _validate_inputs(self):
+        """Validate all inputs are same type and ensure they meet dataset requirement."""
+        assert isinstance(self._inputs, list) and self._inputs != [], \
+            "The parameter 'inputs' must be a list and have at least one element."
+
+        self._input_ds_type = self._get_input_type(self._inputs[0])
+        for input_ds in self._inputs:
+            if self._input_ds_type != self._get_input_type(input_ds):
+                raise Exception("All inputs of step must be same type")
+
+    def _validate_output(self):
+        if self._parallel_run_config.output_action.lower() != "summary_only" and self._output is None:
+            raise Exception("Please specify output parameter.")
+
+        if self._output is not None:
+            self._output = [self._output]
+
+    def _validate_parallel_run_config(self):
+        """Validate parallel run config."""
+        if not isinstance(self._parallel_run_config, _ParallelRunConfigBase):
+            raise Exception("Param parallel_run_config must be a azureml.pipeline.steps.ParallelRunConfig")
+
+        if self._parallel_run_config.mini_batch_size is None:
+            if self._input_ds_type == FILE_TYPE_INPUT:
+                self._mini_batch_size = DEFAULT_MINI_BATCH_SIZE_FILEDATASET
+            elif self._input_ds_type == TABULAR_TYPE_INPUT:
+                self._mini_batch_size = DEFAULT_MINI_BATCH_SIZE_TABULARDATASET
+
+    def _validate_source_directory(self):
+        """Validate the source_directory param."""
+        source_dir = self._parallel_run_config.source_directory
+        if source_dir and source_dir != "":
+            if not os.path.exists(source_dir):
+                raise ValueError("The value '{0}' specified in source_directory doesn't exist.".format(source_dir))
+            if not os.path.isdir(source_dir):
+                raise ValueError(
+                    "The value '{0}' specified in source_directory is not a directory.".format(source_dir)
+                )
+
+            full_path = os.path.abspath(source_dir)
+            if full_path not in sys.path:
+                sys.path.insert(0, full_path)
+
+    def _validate_entry_script(self):
+        """Validate the entry script."""
+        source_dir = self._parallel_run_config.source_directory
+        entry_script = self._parallel_run_config.entry_script
+
+        # In validation of ParallelRunConfig, verify if the entry_script is required.
+        # Here we don't verify again.
+        if entry_script and entry_script != "":
+            if source_dir and source_dir != "":
+                # entry script must be in this directory
+                full_path = os.path.join(source_dir, entry_script)
+                if not os.path.exists(full_path):
+                    raise ValueError("The value '{0}' specified in entry_script doesn't exist.".format(entry_script))
+                if not os.path.isfile(full_path):
+                    raise ValueError("The value '{0}' specified in entry_script is not a file.".format(entry_script))
+
+    def _convert_to_mount_mode(self, in_ds):
+        """Convert inputs into mount mode."""
+        if isinstance(in_ds, PipelineOutputFileDataset):
+            if in_ds._input_mode != "mount" or in_ds._input_path_on_compute is None:
+                return in_ds.as_mount(str(uuid.uuid4()))
+        elif isinstance(in_ds, DatasetConsumptionConfig):
+            if in_ds.mode != "mount" or in_ds.path_on_compute is None:
+                return in_ds.as_mount(str(uuid.uuid4()))
+        return in_ds
+
+    def _convert_to_dataref(self, in_ds):
+        """Convert inputs into data reference."""
+        constructed_df = []
+        if isinstance(in_ds, DatasetConsumptionConfig) and isinstance(in_ds.dataset, AbstractDataset):
+            datastores = self._get_datastores_of_dataset(in_ds.dataset)
+            # if workspace is available at dataset level then use that instead of constructing it
+            # from datastore. Even though one dataset can refer to multiple datastore, all referenced
+            # datastore must be from same workspace.
+            ds_ws = None
+            if in_ds.dataset._registration is not None:
+                ds_ws = in_ds.dataset._registration.workspace
+            if datastores is not None:
+                for ds_index, ds in enumerate(datastores):
+                    if not ds_ws:
+                        ds_ws = Workspace(
+                            subscription_id=ds["subscription"],
+                            resource_group=ds["resourceGroup"],
+                            workspace_name=ds["workspaceName"],
+                        )
+
+                    reg_ds = Datastore(ds_ws, name=ds["datastoreName"])
+
+                    # Can only convert datastore if it is blob based and has no glob in path.
+                    if not isinstance(reg_ds, AzureBlobDatastore) or self._glob_syntax_pattern.search(ds["path"]):
+                        return None
+
+                    mode = "mount" if reg_ds.account_key else "download"
+                    if mode == "download":
+                        self._module_logger.info(
+                            (
+                                "An account key was not provided to the datastore, "
+                                "defaulting to download for {}"
+                            ).format(in_ds.name)
+                        )
+                    input_df = DataReference(
+                        datastore=reg_ds,
+                        data_reference_name="{0}_{1}".format(in_ds.name, ds_index),
+                        path_on_datastore=ds["path"],
+                        mode=mode,
+                    )
+                    constructed_df.append(input_df)
+        return constructed_df
+
+    def _get_pystep_inputs(self):
+        """Process and convert inputs before adding to pystep_inputs."""
+
+        def _process_file_dataset(file_ds):
+            """Process file dataset."""
+            mounted_ds = self._convert_to_mount_mode(file_ds)
+            self._pystep_inputs.append(mounted_ds)
+            # Also add DataReferences if Dataset can be converted.
+            converted_df = self._convert_to_dataref(file_ds)
+            if converted_df:
+                self._pystep_inputs += converted_df
+
+        if self._input_ds_type == FILE_TYPE_INPUT:
+            for index, input_ds in enumerate(self._inputs):
+                _process_file_dataset(input_ds)
+        elif self._input_ds_type == TABULAR_TYPE_INPUT:
+            self._pystep_inputs = self._inputs
+
+    def _handle_side_inputs(self):
+        """Handle side inputs."""
+        for index, input_ds in enumerate(self._side_inputs):
+            if type(input_ds) != PipelineData:
+                input_type = self._get_input_type(input_ds)
+                if input_type == FILE_TYPE_INPUT:
+                    mounted_ds = self._convert_to_mount_mode(input_ds)
+                    self._pystep_side_inputs.append(mounted_ds)
+                    # Update original DatasetConsumptionConfig reference in arguments to
+                    # new DatasetConsumptionConfig with mount
+                    if self._arguments is not None and isinstance(self._arguments, list):
+                        for arg_index, side_input_arg in enumerate(self._arguments):
+                            if side_input_arg == input_ds:
+                                self._arguments[arg_index] = mounted_ds
+                                break
+                    converted_df = self._convert_to_dataref(input_ds)
+                    if converted_df:
+                        self._pystep_side_inputs += converted_df
+                    continue
+            self._pystep_side_inputs.append(input_ds)
+
+    def _get_datastores_of_dataset(self, in_ds):
+        """Get data stores from file dataset."""
+        # First try path where dataprep is installed.
+        # Handles cases where _definition is actually a Dataflow and not a JSON string.
+        try:
+            dataflow = in_ds._dataflow
+            first_step = dataflow._get_steps()[0]
+            if first_step.step_type == "Microsoft.DPrep.GetDatastoreFilesBlock":
+                return first_step.arguments["datastores"]
+        except ImportError:
+            # If dataprep is not installed then load the JSON definition and extract the datastores.
+            parsed_definition = json.loads(in_ds._definition)
+            first_block = parsed_definition['blocks'][0]
+            if first_block['type'] == 'Microsoft.DPrep.GetDatastoreFilesBlock':
+                return first_block['arguments']["datastores"]
+        return None
+
+    def _get_pipeline_runconfig_params(self):
+        """
+        Generate pipeline parameters for runconfig.
+
+        :return: runconfig pipeline parameters
+        :rtype: dict
+        """
+        prun_runconfig_pipeline_params = {}
+        if isinstance(self._node_count, PipelineParameter):
+            prun_runconfig_pipeline_params["NodeCount"] = self._node_count
+        return prun_runconfig_pipeline_params
+
+    def _generate_runconfig(self):
+        """
+        Generate runconfig for parallel run step.
+
+        :return: runConfig
+        :rtype: RunConfig
+        """
+        run_config = RunConfiguration()
+        if isinstance(self._node_count, PipelineParameter):
+            run_config.node_count = self._node_count.default_value
+        else:
+            run_config.node_count = self._node_count
+        if isinstance(self._input_compute_target, AmlCompute):
+            run_config.target = self._input_compute_target
+        run_config.framework = "Python"
+        # For AmlCompute we need to enable Docker.run_config.environment.docker.enabled = True
+        run_config.environment = self._parallel_run_config.environment
+        run_config.environment.docker.enabled = True
+
+        if run_config.environment.python.conda_dependencies is None:
+            run_config.environment.python.conda_dependencies = CondaDependencies.create()
+
+        self._check_required_pip_packages(
+            list(run_config.environment.python.conda_dependencies.pip_packages)
+        )
+
+        return run_config
+
+    def _check_required_pip_packages(self, pip_packages):
+        """Check whether required pip package added"""
+        findings_core = [pip for pip in pip_packages if pip.startswith("azureml") and
+                         not pip.startswith("azureml-dataprep")]
+
+        if not findings_core:
+            warnings.warn(
+                """
+ParallelRunStep requires azureml-core package to provide the functionality.
+Please add azureml-core package in CondaDependencies.""", UserWarning)
+
+        # search to see if any other package may have included it as direct or transitive dependency
+        required_dataprep_packages = REQUIRED_DATAPREP_PACKAGES[self._input_ds_type]
+        findings_dataprep = filter(lambda x: [pip for pip in pip_packages if pip.startswith(x)],
+                                   required_dataprep_packages)
+        if not next(findings_dataprep, False):
+            extra = REQUIRED_DATAPREP_EXTRAS[self._input_ds_type]
+            warnings.warn(
+                """
+ParallelRunStep requires azureml-dataset-runtime[{}] for {} dataset.
+Please add relevant package in CondaDependencies.""".format(extra, self._input_ds_type), UserWarning)
+
+    def _generate_main_file_args(self):
+        """
+        Generate main args for entry script.
+
+        :return: The generated main args for entry script.
+        :rtype: array
+        """
+        main_args = [
+            "--client_sdk_version",
+            azureml.core.VERSION,
+            "--scoring_module_name",
+            self._parallel_run_config.entry_script,
+            "--mini_batch_size",
+            self._mini_batch_size,
+            "--error_threshold",
+            self._error_threshold,
+            "--output_action",
+            self._parallel_run_config.output_action,
+            "--logging_level",
+            self._logging_level,
+            "--run_invocation_timeout",
+            self._run_invocation_timeout,
+            "--run_max_try",
+            self._run_max_try,
+            "--create_snapshot_at_runtime",
+            "True"
+        ]
+
+        if self._parallel_run_config.output_action.lower() == 'append_row' and \
+                self._parallel_run_config.append_row_file_name is not None:
+            main_args += ["--append_row_file_name", self._parallel_run_config.append_row_file_name]
+
+        if self._output is not None:
+            main_args += ["--output", self._output[0]]
+
+        if self._process_count_per_node is not None:
+            main_args += ["--process_count_per_node", self._process_count_per_node]
+
+        if self._arguments is not None and isinstance(self._arguments, list):
+            main_args += self._arguments
+
+        if self._input_ds_type == TABULAR_TYPE_INPUT:
+            for index, in_ds in enumerate(self._pystep_inputs):
+                ds_name = in_ds.input_name if isinstance(in_ds, PipelineOutputTabularDataset) else in_ds.name
+                main_args += ["--input_ds_{0}".format(index), ds_name]
+        elif self._input_ds_type == FILE_TYPE_INPUT:
+            for index, in_ds in enumerate(self._pystep_inputs):
+                if isinstance(in_ds, DatasetConsumptionConfig) or isinstance(in_ds, PipelineOutputFileDataset):
+                    ds_name = in_ds.input_name if isinstance(in_ds, PipelineOutputFileDataset) else in_ds.name
+                    main_args += ["--input_fds_{0}".format(index), ds_name]
+                else:
+                    main_args += ["--input{0}".format(index), in_ds]
+
+        # In order make dataset as pipeline parameter works, we need add it as a param in main_args
+        for index, in_ds in enumerate(self._pystep_inputs):
+            if isinstance(in_ds, DatasetConsumptionConfig) and isinstance(in_ds.dataset, PipelineParameter):
+                main_args += ["--input_pipeline_param_{0}".format(index), in_ds]
+
+        return main_args
+
+    def _generate_batch_inference_metadata(self):
+        """
+        Generate batch inference metadata which will be register to MMS service.
+
+        :return: The generated batch inference metadata.
+        :rtype: str
+        """
+
+        def _get_default_value(in_param):
+            default_value = in_param
+            if isinstance(in_param, PipelineParameter):
+                default_value = in_param.default_value
+            return default_value
+
+        batch_inferencing_metadata = {
+            "Name": self._name,
+            "ComputeName": self._input_compute_target if isinstance(self._input_compute_target, str) else
+            self._input_compute_target.name,
+            "EntryScript": self._parallel_run_config.entry_script,
+            "NodeCount": _get_default_value(self._node_count),
+            "ProcessCountPerNode": _get_default_value(self._process_count_per_node),
+            "MiniBatchSize": _get_default_value(self._mini_batch_size),
+            "ErrorThreshold": _get_default_value(self._parallel_run_config.error_threshold),
+            "OutputAction": self._parallel_run_config.output_action,
+            "EnvironmentName": self._parallel_run_config.environment.name,
+            "EnvironmentVersion": self._parallel_run_config.environment.version,
+            "version:": PARALLEL_RUN_VERSION,
+            "platform": PARALLEL_RUN_PLATFORM,
+        }
+
+        return json.dumps(batch_inferencing_metadata)
+
+    def _process_inputs_output_dataset_configs(self):
+        if not self._inputs:
+            return
+
+        for i in range(len(self._inputs)):
+            input = self._inputs[i]
+            if isinstance(input, OutputDatasetConfig):
+                self._inputs[i] = input.as_input()
+                if self._arguments:
+                    arg_index = self._arguments.index(input)
+                    self._arguments[arg_index] = self._inputs[i]
+
+        if isinstance(self._output, OutputDatasetConfig):
+            try:
+                file_output = self._output._output_file_dataset_config
+            except AttributeError:
+                file_output = self._output
+            if not file_output.source:
+                # temporary hack until this is done. https://msdata.visualstudio.com/Vienna/_workitems/edit/839464
+                file_output.source = '/tmp/{}/'.format(uuid.uuid4())
+
+    def create_node(self, graph, default_datastore, context):
+        """
+        Create a node for :class:`azureml.pipeline.steps.PythonScriptStep` and add it to the specified graph.
+
+        This method is not intended to be used directly. When a pipeline is instantiated with ParallelRunStep,
+        Azure Machine Learning automatically passes the parameters required through this method so that the step
+        can be added to a pipeline graph that represents the workflow.
+
+        :param graph: Graph object.
+        :type graph: azureml.pipeline.core.graph.Graph
+        :param default_datastore: Default datastore.
+        :type default_datastore: azureml.data.azure_storage_datastore.AbstractAzureStorageDatastore or
+            azureml.data.azure_data_lake_datastore.AzureDataLakeDatastore
+        :param context: Context.
+        :type context: _GraphContext
+
+        :return: The created node.
+        :rtype: azureml.pipeline.core.graph.Node
+        """
+        node = super(_ParallelRunStepBase, self).create_node(graph, default_datastore, context)
+        node.get_param("BatchInferencingMetaData").set_value(self._generate_batch_inference_metadata())
+        node.get_param("Script").set_value(DEFAULT_BATCH_SCORE_MAIN_FILE_NAME)
+        return node
+
+    def create_module_def(
+            self,
+            execution_type,
+            input_bindings,
+            output_bindings,
+            param_defs=None,
+            create_sequencing_ports=True,
+            allow_reuse=True,
+            version=None,
+            arguments=None,
+    ):
+        """
+        Create the module definition object that describes the step.
+
+        This method is not intended to be used directly.
+
+        :param execution_type: The execution type of the module.
+        :type execution_type: str
+        :param input_bindings: The step input bindings.
+        :type input_bindings: list
+        :param output_bindings: The step output bindings.
+        :type output_bindings: list
+        :param param_defs: The step param definitions.
+        :type param_defs: list
+        :param create_sequencing_ports: If true, sequencing ports will be created for the module.
+        :type create_sequencing_ports: bool
+        :param allow_reuse: If true, the module will be available to be reused in future Pipelines.
+        :type allow_reuse: bool
+        :param version: The version of the module.
+        :type version: str
+        :param arguments: Annotated arguments list to use when calling this module.
+        :type arguments: builtin.list
+
+        :return: The module def object.
+        :rtype: azureml.pipeline.core.graph.ModuleDef
+        """
+        if param_defs is None:
+            param_defs = []
+        else:
+            param_defs = list(param_defs)
+
+        batch_inference_metadata_param_def = ParamDef(
+            name="BatchInferencingMetaData",
+            set_env_var=False,
+            is_metadata_param=True,
+            default_value="None",
+            env_var_override=False,
+        )
+        param_defs.append(batch_inference_metadata_param_def)
+
+        return super(_ParallelRunStepBase, self).create_module_def(
+            execution_type=execution_type,
+            input_bindings=input_bindings,
+            output_bindings=output_bindings,
+            param_defs=param_defs,
+            create_sequencing_ports=create_sequencing_ports,
+            allow_reuse=allow_reuse,
+            version=version,
+            module_type="BatchInferencing",
+            arguments=arguments,
+        )
