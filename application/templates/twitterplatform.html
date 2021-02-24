@@ -214,12 +214,12 @@ overflow: auto;
       <div class="col-12 mt-3 mb-1" >
      
         
-        <form  method="POST" action="/selectdatetwitter">
+        <form class="form-inline" method="POST" action="/selectdatetwitter">
           <div class="col-xl-12 col-sm-12 col-12" style="padding-left: 2em;font-family: Poppins, sans-serif;" > 
            
-            <b style="color: black;">Start:</b>  <input type="date" name="startdate"  required="required" id="startdate" class="form__input" style="border-radius: 8px;">
+            <b style="color: black;">Start date:</b>  <input type="date" name="startdate"  required="required" id="startdate" class="form__input" style="border-radius: 8px;">
           
-             <b style="color: #000000;">End:</b> <input type="date" name="enddate"   required="required" id="enddate" class="form__input"  style="border-radius: 8px;">
+             <b style="color: #000000;">End date:</b> <input type="date" name="enddate"   required="required" id="enddate" class="form__input"  style="border-radius: 8px;">
           
               <input type="submit" value = "Search" style="background-color:#212729;  border-radius: 8px;color: white;" onclick="picture()">
             </div>
@@ -297,11 +297,7 @@ overflow: auto;
         <div class="container st " style="background-image:linear-gradient(rgba(255, 255, 255, 0.935), rgba(252, 252, 252, 0.89)),  url(https://azermstorage.blob.core.windows.net/appimages/bdp.png); background-size: 620px;">
             {% for result in data['Post_data'] %} 
 
-            <div class="d-flex w-100 justify-content-between" >
-            <blockquote class="twitter-tweet"> <a href="{{result['Post_url']}}?ref_src=twsrc%5Etfw"></a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-            </div>   
-
-            <hr style="color: black;">
+        
                      
               <div class="d-flex w-100 justify-content-between" >
                <h5 class="mb-1">   <img  style="height: 30px; width: 38px;" src="{{result['Channel_logo']}}" alt="logo" class="logo"> <b style="color: black;">  {{result['Username']}}</b> </h5> <br> <br> <b style="color: black;">{{result['Date']}}</b>
@@ -316,9 +312,13 @@ overflow: auto;
                <option value="other1">{{result["drop_down"][0]}}</option>
                <option value="other2">{{result["drop_down"][1]}}</option>
                </select>  </h5>
+               <div class="d-flex w-100 justify-content-between" >
+                <blockquote class="twitter-tweet"> <a href="{{result['Post_url']}}?ref_src=twsrc%5Etfw"></a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                </div>   
+    
+                <hr style="color: black;">
                
-               
-               <hr style="color: black; border-top: 1px solid"> <br><br>
+              <br><br>
               {% endfor %}
   
           </div>

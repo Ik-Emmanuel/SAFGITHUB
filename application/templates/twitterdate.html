@@ -243,12 +243,6 @@ overflow: auto;
                   {% for result in data['Post_data'] %} 
 
 
-                 
-            <div class="d-flex w-100 justify-content-between" >
-              <blockquote class="twitter-tweet"> <a href="{{result['Post_url']}}?ref_src=twsrc%5Etfw"></a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-              </div>   
-  
-              <hr style="color: black;">
                   
                   <div class="d-flex w-100 justify-content-between" >
                      <h5 class="mb-1" style="color: black;">   <img  style="height: 30px; width: 38px;" src="{{result['Channel_logo']}}" alt="logo" class="logo" > {{result['Username']}}</h5> <br> <br> <b style="color: black;">{{result['Date']}}</b>
@@ -266,10 +260,14 @@ overflow: auto;
                      <option value="other1">{{result["drop_down"][0]}}</option>
                      <option value="other2">{{result["drop_down"][1]}}</option>
                      </select>  </h5> 
+                 
+                     <div class="d-flex w-100 justify-content-between" >
+                       <blockquote class="twitter-tweet"> <a href="{{result['Post_url']}}?ref_src=twsrc%5Etfw"></a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                       </div>   
+           
+                       <hr style="color: black;">
                      
-                     
-                                    
-               <hr style="color: black; border-top: 3px solid"> <br><br>
+          <br><br>
                     {% endfor %}
       
       

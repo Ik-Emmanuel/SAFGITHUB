@@ -237,11 +237,7 @@ overflow: auto;
                   {% for result in data['Post_data'] %} 
 
                   
-                  <div class="fb-post" style="display: flex; justify-content: center;" data-href="{{result['Post_url']}}" data-width="500" data-show-text="true"><blockquote cite="{{result['Post_url']}}" class="fb-xfbml-parse-ignore"><p>{{result['Post']}} </p></blockquote></div>
-                  
-
-
-                  <hr style="color: black; size: 2px;">
+              
 
 
                     <div class="d-flex w-100 justify-content-between" >
@@ -261,7 +257,8 @@ overflow: auto;
                      <option value="other1">{{result["drop_down"][0]}}</option>
                      <option value="other2">{{result["drop_down"][1]}}</option>
                      </select>  </h5>
-                      <hr style="color: black; border-top: 2px solid"> <br><br>
+                     <div class="fb-post" style="display: flex; justify-content: center;" data-href="{{result['Post_url']}}" data-width="500" data-show-text="true"><blockquote cite="{{result['Post_url']}}" class="fb-xfbml-parse-ignore"><p>{{result['Post']}} </p></blockquote></div>
+                    <hr style="color: black; border-top: 2px solid"> <br><br>
                     {% endfor %}
       
       
