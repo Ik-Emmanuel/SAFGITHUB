@@ -40,9 +40,9 @@ table {
                       <td>{{data['Email']}}</td>
     
                      <form action="{{url_for('approverequest')}}" method="GET">
-                      <td><button  class="btn" style="background-color:  #212729;" type="Submit"  name="id" value=" {{data['user_id']}}" onclick="picture()"> <b style="color: white;"> Approve</b> </button></td></form>
+                      <td><input name="email" value=" {{data['Email']}}"><button  class="btn" style="background-color:  #212729;" type="Submit"  name="id" value=" {{data['user_id']}}" onclick="picture()"> <b style="color: white;"> Approve</b> </button></td></form>
                       <form action="{{url_for('declinerequest')}}" method="GET">
-                        <td><button  class="btn" style="background-color:  #212729; color: white;" type="Submit"  name="id2"  placeholder= "Decline" value=" {{data['user_id']}}"onclick="picture()"> <b> Decline </b></button></td></form>
+                        <td><input name="email2" value=" {{data['Email']}}"><button  class="btn" style="background-color:  #212729; color: white;" type="Submit"  name="id2"  placeholder= "Decline" value=" {{data['user_id']}}"onclick="picture()"> <b> Decline </b></button></td></form>
                       
                     </tr>
     

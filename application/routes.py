@@ -173,6 +173,21 @@ def signup():
             db.session.add(user)
             db.session.commit()
 
+            full_name = f"{first_name} {last_name}"
+
+            session['full_name'] = full_name
+
+            SRMS.need = None
+            SRMS.message = None
+
+            # email = "moses.ikeakhe@sterling.ng"
+
+            SRMS.task = "Signup_Team"
+            SRMS.SendMail(full_name, email)
+
+            SRMS.task = "Signup_User"
+            SRMS.Sendgit checkoutMail(full_name, email)
+
             flash(f"Hi {first_name}, your signup request has been successfully submitted for approval!", "success")
 
             return render_template("login2.html")
@@ -264,10 +279,23 @@ def approverequest():
         return redirect(url_for('login'))
 
     user_id = request.args.get('id')
+    email = request.args.get('email')
 
     try:
         db.session.execute(f"update [dbo].[SAF_users_table] set is_Approved = 1 where user_id = {user_id}")
         db.session.commit()
+
+        # email = "moses.ikeakhe@sterling.ng"
+
+        SRMS.need = None
+        SRMS.message = None
+
+        # print(email)
+
+        full_name = session['full_name']
+
+        SRMS.task = "Signup_Approved"
+        SRMS.SendMail(full_name, email)
         result = "User access successfully approved"
     except Exception as e:
         result = "User access approval failed, please try again."
@@ -293,12 +321,22 @@ def declinerequest():
         return redirect(url_for('login'))
 
     user_id = request.args.get('id2')
+    email = request.args.get('email2')
 
     try:
         db.session.execute(f"DELETE FROM dbo.SAF_users_table where user_id = {user_id}")
         db.session.commit()
+
+        SRMS.need = None
+        SRMS.message = None
+
+        full_name = session['full_name']
+
+        SRMS.task = "Signup_Declined"
+        SRMS.SendMail(full_name, email)
         result = "User access successfully declined"
     except Exception as e:
+        print(str(e))
         result = "User access decline failed, please try again."
 
     flash(result, "success")
@@ -964,6 +1002,17 @@ def feedbackentry():
         full_name = f"{name} {surname}"
         SRMS.database_connection()
         data = SRMS.feedback(full_name, email, need, message)
+        SRMS.task = "Feedback_Team"
+        SRMS.need = need
+        SRMS.message = message
+        SRMS.SendMail(full_name, email)
+
+        SRMS.need = None
+        SRMS.message = None
+
+        SRMS.task = "Feedback_User"
+        SRMS.SendMail(full_name, email)
+
         if data[0]:
             flash(data[1], "success")
             return render_template('feedback.html', user=session['email'])
@@ -1654,8 +1703,8 @@ def instagramdatesentiment():
         return render_template('igdate.html', user=session['email'], data=None)
 
 
-@app.route('/spectadatesentiment', methods=["GET", "POST"])
-def spectadatesentiment():
+@app.route('/altpowerdatesentiment', methods=["GET", "POST"])
+def altpowerdatesentiment():
     try:
 
         if 'email' not in session:
@@ -1686,9 +1735,9 @@ def spectadatesentiment():
             SRMS.database_connection()
 
             if sentiment == 'All':
-                data = SRMS.daterange_specta(startdate, enddate)
+                data = SRMS.daterange_altpower(startdate, enddate)
             else:
-                data = SRMS.specta_daterange_filter_by_sentiment(sentiment, startdate, enddate)
+                data = SRMS.altpower_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
             return render_template('altpowerdate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -1700,8 +1749,8 @@ def spectadatesentiment():
         return render_template('altpowerdate.html', user=session['email'], data=None)
 
 
-@app.route('/spectadatechannel', methods=["GET", "POST"])
-def spectadatechannel():
+@app.route('/altpowerdatechannel', methods=["GET", "POST"])
+def altpowerdatechannel():
     try:
         if 'email' not in session:
             return redirect(url_for('login'))
@@ -1731,9 +1780,9 @@ def spectadatechannel():
             SRMS.database_connection()
 
             if platform == 'All':
-                data = SRMS.daterange_specta(startdate, enddate)
+                data = SRMS.daterange_altpower(startdate, enddate)
             else:
-                data = SRMS.specta_daterange_filter_by_channel(platform, startdate, enddate)
+                data = SRMS.altpower_daterange_filter_by_channel(platform, startdate, enddate)
 
             return render_template('altpowerdate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -1836,8 +1885,8 @@ def doubbledatechannel():
         return render_template('doubledate.html', user=session['email'], data=None)
 
 
-@app.route('/onebankdatesentiment', methods=["GET", "POST"])
-def onebankdatesentiment():
+@app.route('/altmalldatesentiment', methods=["GET", "POST"])
+def altmalldatesentiment():
     try:
 
         if 'email' not in session:
@@ -1868,9 +1917,9 @@ def onebankdatesentiment():
             SRMS.database_connection()
 
             if sentiment == 'All':
-                data = SRMS.daterange_onebank(startdate, enddate)
+                data = SRMS.daterange_altmall(startdate, enddate)
             else:
-                data = SRMS.onebank_daterange_filter_by_sentiment(sentiment, startdate, enddate)
+                data = SRMS.altmall_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
             return render_template('altmalldate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -1882,8 +1931,8 @@ def onebankdatesentiment():
         return render_template('altmalldate.html', user=session['email'], data=None)
 
 
-@app.route('/onebankdatechannel', methods=["GET", "POST"])
-def onebankdatechannel():
+@app.route('/altmalldatechannel', methods=["GET", "POST"])
+def altmalldatechannel():
     try:
         if 'email' not in session:
             return redirect(url_for('login'))
@@ -1912,9 +1961,9 @@ def onebankdatechannel():
 
             SRMS.database_connection()
             if platform == 'All':
-                data = SRMS.daterange_onebank(startdate, enddate)
+                data = SRMS.daterange_altmall(startdate, enddate)
             else:
-                data = SRMS.onebank_daterange_filter_by_channel(platform, startdate, enddate)
+                data = SRMS.altmall_daterange_filter_by_channel(platform, startdate, enddate)
 
             return render_template('altmalldate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -1926,8 +1975,8 @@ def onebankdatechannel():
         return render_template('altmalldate.html', user=session['email'], data=None)
 
 
-@app.route('/onepaydatesentiment', methods=["GET", "POST"])
-def onepaydatesentiment():
+@app.route('/altdrivedatesentiment', methods=["GET", "POST"])
+def altdrivedatesentiment():
     try:
 
         if 'email' not in session:
@@ -1958,9 +2007,9 @@ def onepaydatesentiment():
             SRMS.database_connection()
 
             if sentiment == 'All':
-                data = SRMS.daterange_onepay(startdate, enddate)
+                data = SRMS.daterange_altdrive(startdate, enddate)
             else:
-                data = SRMS.onepay_daterange_filter_by_sentiment(sentiment, startdate, enddate)
+                data = SRMS.altdrive_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
             return render_template('altdrivedate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -1972,8 +2021,8 @@ def onepaydatesentiment():
         return render_template('altdrivedate.html', user=session['email'], data=None)
 
 
-@app.route('/onepaydatechannel', methods=["GET", "POST"])
-def onepaydatechannel():
+@app.route('/altdrivedatechannel', methods=["GET", "POST"])
+def altdrivedatechannel():
     try:
         if 'email' not in session:
             return redirect(url_for('login'))
@@ -2003,9 +2052,9 @@ def onepaydatechannel():
             SRMS.database_connection()
 
             if platform == 'All':
-                data = SRMS.daterange_onepay(startdate, enddate)
+                data = SRMS.daterange_altdrive(startdate, enddate)
             else:
-                data = SRMS.onepay_daterange_filter_by_channel(platform, startdate, enddate)
+                data = SRMS.altdrive_daterange_filter_by_channel(platform, startdate, enddate)
 
             return render_template('altdrivedate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -2017,8 +2066,8 @@ def onepaydatechannel():
         return render_template('altdrivedate.html', user=session['email'], data=None)
 
 
-@app.route('/iinvestdatesentiment', methods=["GET", "POST"])
-def iinvestdatesentiment():
+@app.route('/altpaydatesentiment', methods=["GET", "POST"])
+def altpaydatesentiment():
     try:
 
         if 'email' not in session:
@@ -2047,9 +2096,9 @@ def iinvestdatesentiment():
 
             SRMS.database_connection()
             if sentiment == 'All':
-                data = SRMS.daterange_i_invest(startdate, enddate)
+                data = SRMS.daterange_altpay(startdate, enddate)
             else:
-                data = SRMS.i_invest_daterange_filter_by_sentiment(sentiment, startdate, enddate)
+                data = SRMS.altpay_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
             return render_template('altpaydate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -2061,8 +2110,8 @@ def iinvestdatesentiment():
         return render_template('altpaydate.html', user=session['email'], data=None)
 
 
-@app.route('/iinvestdatechannel', methods=["GET", "POST"])
-def iinvestdatechannel():
+@app.route('/altpaydatechannel', methods=["GET", "POST"])
+def altpaydatechannel():
     try:
         if 'email' not in session:
             return redirect(url_for('login'))
@@ -2092,9 +2141,9 @@ def iinvestdatechannel():
             SRMS.database_connection()
 
             if platform == 'All':
-                data = SRMS.daterange_i_invest(startdate, enddate)
+                data = SRMS.daterange_altpay(startdate, enddate)
             else:
-                data = SRMS.i_invest_daterange_filter_by_channel(platform, startdate, enddate)
+                data = SRMS.altpay_daterange_filter_by_channel(platform, startdate, enddate)
 
             return render_template('altpaydate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
