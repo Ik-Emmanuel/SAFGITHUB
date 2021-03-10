@@ -186,7 +186,7 @@ def signup():
             SRMS.SendMail(full_name, email)
 
             SRMS.task = "Signup_User"
-            SRMS.Sendgit checkoutMail(full_name, email)
+            SRMS.SendMail(full_name, email)
 
             flash(f"Hi {first_name}, your signup request has been successfully submitted for approval!", "success")
 
