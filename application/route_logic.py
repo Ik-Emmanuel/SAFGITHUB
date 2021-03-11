@@ -110,7 +110,7 @@ class SRMS(object):
                             from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                            like '%alt%' and Date = CAST (GETDATE() AS DATE)) as e"
+                            like '%alt%' and Date = CAST (GETDATE() AS DATE)) as e order by date desc"
 
                 try:
                     self.cursor.execute(query1)
@@ -163,8 +163,8 @@ class SRMS(object):
                     # data["Sentiment_emojie"]
                     # data["drop_down"]
                     post_data = [{"Channel": "Twitter",
-                                  'Username': "Sterling Alternative Finance",
-                                  "Post": "No post directed at Sterling Alternative Finance so far on all social platforms....",
+                                  'Username': "AltfinanceNg",
+                                  "Post": "No post directed at AltfinanceNg so far on all social platforms....",
                                   'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/favicon.png",
                                   'Sentiment': "Positive",
                                   'drop_down_emojie': ["https://azermstorage.blob.core.windows.net/appimages/neg.jpg",
@@ -176,11 +176,11 @@ class SRMS(object):
                     # result = post_data
 
                 query2 = f"select count(*) from(\
-                                                select isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
+                                                select isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
                                                 comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where Date = CAST (GETDATE() AS DATE) union all\
                                                 select isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                                                 isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where Date = CAST (GETDATE() AS DATE)  union all\
-                                                select isnull('Instagram','Instagram') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc'), Instagram_Post as post, Likes, \
+                                                select isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
                                                 Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFinstagramsentiment where Date = CAST (GETDATE() AS DATE)  union all\
                                                 select isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE)  union all\
@@ -201,7 +201,7 @@ class SRMS(object):
                     result['total_mentions'] = 0
 
                 query3 = f"select sum(sentiment) sentiment from (select count(sentiment) as sentiment from(\
-                            select isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
+                            select isnull('Facebook','Facebook') as Channel, isnull('AltfinanceNg','AltfinanceNg') as username, Text as post, Likes, \
                             comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where Sentiment = 'Positive' and Date = CAST (GETDATE() AS DATE) union all\
                             select isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                             isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where Sentiment = 'Positive' and Date = CAST (GETDATE() AS DATE) union all\
@@ -227,7 +227,7 @@ class SRMS(object):
                     result['Positive_count'] = 0
 
                 query4 = f"select count(sentiment) as sentiment from(\
-                            select isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
+                            select isnull('Facebook','Facebook') as Channel, isnull('AltfinanceNg','AltfinanceNg') as username, Text as post, Likes, \
                             comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where Sentiment = 'Negative' and Date = CAST (GETDATE() AS DATE) union all\
                             select isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                             isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where Sentiment = 'Negative' and Date = CAST (GETDATE() AS DATE) union all\
@@ -252,7 +252,7 @@ class SRMS(object):
                     result['Negative_count'] = 0
 
                 query5 = f"select count(sentiment) as sentiment from(\
-                            select isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
+                            select isnull('Facebook','Facebook') as Channel, isnull('AltfinanceNg','AltfinanceNg') as username, Text as post, Likes, \
                             comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where Sentiment = 'Neutral' and Date = CAST (GETDATE() AS DATE) union all\
                             select isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                             isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where Sentiment = 'Neutral' and Date = CAST (GETDATE() AS DATE) union all\
@@ -280,7 +280,7 @@ class SRMS(object):
                                                 select sum([CurrentdayTotal]) [CurrentdayTotal], sum([YesterdayTotal]) [YesterdayTotal], [sentiment] from(\
                                                 select 0 [YesterdayTotal], cast(COUNT([sentiment]) as float) [CurrentdayTotal], [sentiment] from\
                                                 (select * from(\
-                                                select isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
+                                                select isnull('Facebook','Facebook') as Channel, isnull('AltfinanceNg','AltfinanceNg') as username, Text as post, Likes, \
                                                 comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and sentiment = 'Positive' union all\
                                                 select isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                                                 isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Positive' union all\
@@ -293,7 +293,7 @@ class SRMS(object):
                                                 group by [sentiment]\
                                                 union\
                                                 select cast(COUNT([sentiment]) as float) [YesterdayTotal], 0 [CurrentdayTotal], [sentiment] from\
-                                                (select isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
+                                                (select isnull('Facebook','Facebook') as Channel, isnull('AltfinanceNg','AltfinanceNg') as username, Text as post, Likes, \
                                                 comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where [Date] = (select dateadd(dd,-1, cast(getdate()\
                                                 as date))) and sentiment = 'Positive' union all\
                                                 select isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
@@ -325,19 +325,14 @@ class SRMS(object):
                 if len(return_value) > 0:
                     for i in range(len(return_value)):
                         if return_value[i][0] > 0:
-                            result[
-                                'Positive_%change'] = f"{round(return_value[i][0] * 100, 2)}% increase from yesterday"
-                            result[
-                                '%Positive_change_icon'] = "https://azermstorage.blob.core.windows.net/appimages/gup.png"
+                            result['Positive_%change'] = f"{round(return_value[i][0] * 100, 2)}% increase from yesterday"
+                            result['%Positive_change_icon'] = "https://azermstorage.blob.core.windows.net/appimages/gup.png"
                         elif return_value[i][0] < 0:
-                            result[
-                                'Positive_%change'] = f"{abs(round(return_value[i][0] * 100, 2))}% decrease from yesterday"
-                            result[
-                                '%Positive_change_icon'] = "https://azermstorage.blob.core.windows.net/appimages/gdown.png"
+                            result['Positive_%change'] = f"{abs(round(return_value[i][0] * 100, 2))}% decrease from yesterday"
+                            result['%Positive_change_icon'] = "https://azermstorage.blob.core.windows.net/appimages/gdown.png"
                         else:
                             result['Positive_%change'] = "0% change from yesterday"
-                            result[
-                                '%Positive_change_icon'] = "https://azermstorage.blob.core.windows.net/appimages/eq.png"
+                            result['%Positive_change_icon'] = "https://azermstorage.blob.core.windows.net/appimages/eq.png"
                 else:
                     result['Positive_%change'] = "0% change from yesterday"
                     result['%Positive_change_icon'] = "https://azermstorage.blob.core.windows.net/appimages/eq.png"
@@ -346,7 +341,7 @@ class SRMS(object):
                                                 select sum([CurrentdayTotal]) [CurrentdayTotal], sum([YesterdayTotal]) [YesterdayTotal], [sentiment] from(\
                                                 select 0 [YesterdayTotal], cast(COUNT([sentiment]) as float) [CurrentdayTotal], [sentiment] from\
                                                 (select * from(\
-                                                select isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
+                                                select isnull('Facebook','Facebook') as Channel, isnull('AltfinanceNg','AltfinanceNg') as username, Text as post, Likes, \
                                                 comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and sentiment = 'Negative' union all\
                                                 select isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                                                 isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Negative' union all\
@@ -359,7 +354,7 @@ class SRMS(object):
                                                 group by [sentiment]\
                                                 union\
                                                 select cast(COUNT([sentiment]) as float) [YesterdayTotal], 0 [CurrentdayTotal], [sentiment] from\
-                                                (select isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
+                                                (select isnull('Facebook','Facebook') as Channel, isnull('AltfinanceNg','AltfinanceNg') as username, Text as post, Likes, \
                                                 comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where [Date] = (select dateadd(dd,-1, cast(getdate()\
                                                 as date))) and sentiment = 'Negative' union all\
                                                 select isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
@@ -412,7 +407,7 @@ class SRMS(object):
                                                 select sum([CurrentdayTotal]) [CurrentdayTotal], sum([YesterdayTotal]) [YesterdayTotal], [sentiment] from(\
                                                 select 0 [YesterdayTotal], cast(COUNT([sentiment]) as float) [CurrentdayTotal], [sentiment] from\
                                                 (select * from(\
-                                                select isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
+                                                select isnull('Facebook','Facebook') as Channel, isnull('AltfinanceNg','AltfinanceNg') as username, Text as post, Likes, \
                                                 comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and sentiment = 'Neutral' union all\
                                                 select isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                                                 isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Neutral' union all\
@@ -425,7 +420,7 @@ class SRMS(object):
                                                 group by [sentiment]\
                                                 union\
                                                 select cast(COUNT([sentiment]) as float) [YesterdayTotal], 0 [CurrentdayTotal], [sentiment] from\
-                                                (select isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
+                                                (select isnull('Facebook','Facebook') as Channel, isnull('AltfinanceNg','AltfinanceNg') as username, Text as post, Likes, \
                                                 comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where [Date] = (select dateadd(dd,-1, cast(getdate()\
                                                 as date))) and sentiment = 'Neutral' union all\
                                                 select isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
@@ -521,7 +516,7 @@ class SRMS(object):
                 query1 = f"select * from(\
                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                like '%alt%' and Date = CAST (GETDATE() AS DATE)) as e"
+                                like '%alt%' and Date = CAST (GETDATE() AS DATE)) as e order by date desc"
                 # -- and Date = '{self.today}' \
 
                 try:
@@ -568,8 +563,8 @@ class SRMS(object):
                         # print(f"data1: {data}")
                 else:
                     post_data = [{"Channel": "Twitter",
-                                  "Post": "No tweet directed at Sterling Alternative Finance so far for today....",
-                                  'Username': "Sterling Alternative Finance",
+                                  "Post": "No tweet directed at AltfinanceNg so far for today....",
+                                  'Username': "AltfinanceNg",
                                   'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/twitter.png",
                                   'Sentiment': "Positive",
                                   'drop_down_emojie': ["https://azermstorage.blob.core.windows.net/appimages/neg.jpg",
@@ -757,8 +752,7 @@ class SRMS(object):
                         if return_value[i][0] > 0:
                             result['Neutral_%change'] = f"{round(return_value[i][0], 2) * 100}% increase from yesterday"
                         elif return_value[i][0] < 0:
-                            result[
-                                'Neutral_%change'] = f"{round(abs(return_value[i][0]), 2) * 100}% decrease from yesterday"
+                            result['Neutral_%change'] = f"{round(abs(return_value[i][0]), 1) * 100}% decrease from yesterday"
                         else:
                             result['Neutral_%change'] = "0% change from yesterday"
                         # result['Neutral_%change'] = f"{round(abs(return_value[i][0]), 2)}%"
@@ -4378,7 +4372,7 @@ class SRMS(object):
                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltdriveInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' union all\
                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                like '%altdrive%' and Date between '{startdate}' and '{enddate}') as e union \
+                                like '%altdrive%' and Date between '{startdate}' and '{enddate}') as e union all\
                                 select count(*) as sentiment from sa.RefreshedAltdriveInstagramSentiment where date between '{startdate}' and '{enddate}') f"
 
                 try:
@@ -5140,7 +5134,7 @@ class SRMS(object):
                                     from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE) and comment_sentiment = 'Positive' union all\
                                     select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                     retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%' \
-                                    and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e"
+                                    and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e order by date desc"
                 else:
                     query1 = f"select * from(\
                                     select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
@@ -5151,7 +5145,7 @@ class SRMS(object):
                                     from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE) and comment_sentiment = '{sentiment}' union all\
                                     select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                     retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                    and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}') as e"
+                                    and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}') as e order by date desc"
                 try:
                     self.cursor.execute(query1)
                     return_value = self.cursor.fetchall()
@@ -5201,13 +5195,14 @@ class SRMS(object):
                 else:
 
                     post_data = [{"Channel": "Twitter",
-                                  "Post": f"No post with {sentiment} sentiment tag found on all social platforms....",
+                                  'Username': 'AltfinanceNg',
+                                  "Post": f"No post with {sentiment} sentiment found on all social platforms....",
                                   'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/favicon.png",
-                                  'Sentiment': f"{sentiment}",
-                                  'drop_down_emojie': ["https://azermstorage.blob.core.windows.net/appimages/neg.jpg",
-                                                       "https://azermstorage.blob.core.windows.net/appimages/neut.jpg"],
-                                  'Sentiment_emojie': "https://azermstorage.blob.core.windows.net/appimages/pos.jpg",
-                                  'drop_down': ["Negative", "Neutral"]}]
+                                  'Sentiment': f"{sentiment}"}]
+                                  # 'drop_down_emojie': ["https://azermstorage.blob.core.windows.net/appimages/neg.jpg",
+                                  #                      "https://azermstorage.blob.core.windows.net/appimages/neut.jpg"],
+                                  # 'Sentiment_emojie': "https://azermstorage.blob.core.windows.net/appimages/pos.jpg",
+                                  # 'drop_down': ["Negative", "Neutral"]}]
 
                     if sentiment == "Positive":
                         post_data[0]["drop_down"] = ["Negative", "Neutral"]
@@ -6216,7 +6211,7 @@ class SRMS(object):
                 query1 = f"select * from(\
                                         select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                         retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                        like '%alt%' and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}') as e"
+                                        like '%alt%' and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}') as e order by date desc"
 
                 try:
                     self.cursor.execute(query1)
@@ -13003,7 +12998,7 @@ class SRMS(object):
                                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltdriveInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' union all\
                                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                like '%altdrive%' and Date between '{startdate}' and '{enddate}') as e union \
+                                                like '%altdrive%' and Date between '{startdate}' and '{enddate}') as e union all\
                                                 select count(*) as sentiment from sa.RefreshedAltdriveInstagramSentiment where date between '{startdate}' and '{enddate}') f"
 
                 try:
@@ -13240,7 +13235,7 @@ class SRMS(object):
                                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltdriveInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' union all\
                                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                like '%altdrive%' and Date between '{startdate}' and '{enddate}') as e union \
+                                                like '%altdrive%' and Date between '{startdate}' and '{enddate}') as e union all\
                                                 select count(*) as sentiment from sa.RefreshedAltdriveInstagramSentiment where date between '{startdate}' and '{enddate}') f"
 
                 try:
@@ -13862,6 +13857,8 @@ class SRMS(object):
             time = str(datetime.datetime.now()).split(' ')[1].split('+')[0]
             mail_type = str(email.lower()).split('@')[1].split('.')[0]
             first_name = str(full_name).split(' ')[0]
+            dev_url = "http://127.0.0.1:5000"
+            prod_url = "https://srms-saf.azurewebsites.net"
 
             if '00:00:23' <= time <= '10:59:59':
                 greeting = f"Good Morning"
@@ -13882,7 +13879,7 @@ class SRMS(object):
                               <body>
                                 """ + str(greeting) + """ Team,<br>
                                    <p><b>""" + str(full_name) + """(""" + str(email) + """)</b> is requesting access to the SRMS platform. Kindly click <br>
-                                   <a href='http://127.0.0.1:5000/signuprequest' target='_blank'>HERE</a> to treat this request.
+                                   <a href='https://srms-saf.azurewebsites.net/signuprequest' target='_blank'>HERE</a> to treat this request.
                                 </p>Best Regards
                               </body>
                             </html>
@@ -13894,7 +13891,9 @@ class SRMS(object):
                 recipient_emails.clear()
                 recipient_emails.append('moses.ikeakhe@sterling.ng')
                 recipient_emails.append('Ikechukwu.Nwokocha@sterling.ng')
-                # recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
+                recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
+                recipient_emails.append('Chidimma.Uzoh@sterling.ng')
+                recipient_emails.append('OLAMIDE.JOLAOSO@sterling.ng')
 
             elif self.task == "Signup_User":
                 # first_name = str(full_name).split(' ')[0]
@@ -13918,7 +13917,7 @@ class SRMS(object):
 
                 recipient_emails.clear()
                 recipient_emails.append(email)
-                recipient_emails.append('moses.ikeakhe@sterling.ng')
+                # recipient_emails.append('moses.ikeakhe@sterling.ng')
                 # recipient_emails.append('Ikechukwu.Nwokocha@sterling.ng')
                 # recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
 
@@ -13931,7 +13930,7 @@ class SRMS(object):
                               <body>
                                 """ + str(greeting) + """ """ + str(first_name) + """,<br>
                                    <p>Your Signup request has been approved by the Team. Kindly click <br>
-                                   <a href='http://127.0.0.1:5000/' target='_blank'>HERE</a> to visit the SRMS Platform.
+                                   <a href='https://srms-saf.azurewebsites.net/' target='_blank'>HERE</a> to visit the SRMS Platform.
                                 </p>Best Regards.
                               </body>
                             </html>
@@ -13946,7 +13945,7 @@ class SRMS(object):
 
                 recipient_emails.clear()
                 recipient_emails.append(email)
-                recipient_emails.append('moses.ikeakhe@sterling.ng')
+                # recipient_emails.append('moses.ikeakhe@sterling.ng')
                 # recipient_emails.append('Ikechukwu.Nwokocha@sterling.ng')
                 # recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
 
@@ -13973,7 +13972,7 @@ class SRMS(object):
 
                 recipient_emails.clear()
                 recipient_emails.append(email)
-                recipient_emails.append('moses.ikeakhe@sterling.ng')
+                # recipient_emails.append('moses.ikeakhe@sterling.ng')
                 # recipient_emails.append('Ikechukwu.Nwokocha@sterling.ng')
                 # recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
 
@@ -13997,7 +13996,9 @@ class SRMS(object):
                 recipient_emails.clear()
                 recipient_emails.append('moses.ikeakhe@sterling.ng')
                 recipient_emails.append('Ikechukwu.Nwokocha@sterling.ng')
-                # recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
+                recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
+                recipient_emails.append('Chidimma.Uzoh@sterling.ng')
+                recipient_emails.append('OLAMIDE.JOLAOSO@sterling.ng')
             elif self.task == "Feedback_User":
                 html = """\
                             <html>
@@ -14019,7 +14020,7 @@ class SRMS(object):
 
                 recipient_emails.clear()
                 recipient_emails.append(email)
-                recipient_emails.append('moses.ikeakhe@sterling.ng')
+                # recipient_emails.append('moses.ikeakhe@sterling.ng')
                 # recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
 
             # with open(textfile, 'r', encoding='utf-8') as template_file:
