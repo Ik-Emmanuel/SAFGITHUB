@@ -482,10 +482,10 @@ def fbplatform():
     if user is None:
         return redirect(url_for('login'))
     else:
-        SRMS.database_connection()
-        data = SRMS.fbplatform()
+        # SRMS.database_connection()  ##### uncomment for facebook
+        # data = SRMS.fbplatform()  #### uncomment for facebook and  add data=data to thr return 
         # print(f"'Facebook_data': {data}")
-        return render_template('fbplatform.html', user=session['email'], data=data)
+        return render_template('fbplatform.html', user=session['email'])
 
 
 @app.route('/nlplatform')

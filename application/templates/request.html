@@ -20,6 +20,13 @@ table {
       <div class="card-body">
           <div class="table-responsive">
             <br> <br> <br><table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+              <colgroup>
+                <col span="1" style="width: 35%;">
+                <col span="1" style="width: 35%;">
+                <col span="1" style="width: 15%;">
+                <col span="1" style="width: 15%;">
+             </colgroup>
+             
                   <thead  style=" background: #212729;  background-image: url(https://azermstorage.blob.core.windows.net/appimages/bdp.png); background-size: 20em; font-family: Poppins, sans-serif; ">
                       <tr style="color: white;">
                           <th>Name of Staff</th>
@@ -40,9 +47,9 @@ table {
                       <td>{{data['Email']}}</td>
     
                      <form action="{{url_for('approverequest')}}" method="GET">
-                      <td><input name="email" value=" {{data['Email']}}"><button  class="btn" style="background-color:  #212729;" type="Submit"  name="id" value=" {{data['user_id']}}" onclick="picture()"> <b style="color: white;"> Approve</b> </button></td></form>
+                      <td><input name="email" style="width: 0%; visibility: hidden;" value=" {{data['Email']}}"><button  class="btn" style="background-color:  #212729;" type="Submit"  name="id" value=" {{data['user_id']}}" onclick="picture()"> <b style="color: white;"> Approve</b> </button></td></form>
                       <form action="{{url_for('declinerequest')}}" method="GET">
-                        <td><input name="email2" value=" {{data['Email']}}"><button  class="btn" style="background-color:  #212729; color: white;" type="Submit"  name="id2"  placeholder= "Decline" value=" {{data['user_id']}}"onclick="picture()"> <b> Decline </b></button></td></form>
+                        <td><input name="email2" style="width: 0%; visibility: hidden;"   value=" {{data['Email']}}"><button  class="btn" style="background-color:  #212729; color: white;" type="Submit"  name="id2"  placeholder= "Decline" value=" {{data['user_id']}}"onclick="picture()"> <b> Decline </b></button></td></form>
                       
                     </tr>
     
