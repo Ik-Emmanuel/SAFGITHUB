@@ -175,7 +175,7 @@ def signup():
 
             full_name = f"{first_name} {last_name}"
 
-            session['full_name'] = full_name
+            # session['full_name'] = full_name
 
             SRMS.need = None
             SRMS.message = None
@@ -280,6 +280,7 @@ def approverequest():
 
     user_id = request.args.get('id')
     email = request.args.get('email')
+    full_name = request.args.get('full_name').strip()
 
     try:
         db.session.execute(f"update [dbo].[SAF_users_table] set is_Approved = 1 where user_id = {user_id}")
@@ -290,9 +291,9 @@ def approverequest():
         SRMS.need = None
         SRMS.message = None
 
-        # print(email)
+        # print(full_name)
 
-        full_name = session['full_name']
+        # full_name = session['full_name']
 
         SRMS.task = "Signup_Approved"
         SRMS.SendMail(full_name, email)
@@ -322,6 +323,7 @@ def declinerequest():
 
     user_id = request.args.get('id2')
     email = request.args.get('email2')
+    full_name = request.args.get('full_name2').strip()
 
     try:
         db.session.execute(f"DELETE FROM dbo.SAF_users_table where user_id = {user_id}")
@@ -330,7 +332,7 @@ def declinerequest():
         SRMS.need = None
         SRMS.message = None
 
-        full_name = session['full_name']
+        # full_name = session['full_name']
 
         SRMS.task = "Signup_Declined"
         SRMS.SendMail(full_name, email)
@@ -371,6 +373,71 @@ def approveadminrequest():
     flash(result)
 
     return redirect(url_for("adminrequest"))
+
+
+@app.route('/revokerequest', methods=["GET", "POST"])
+def revokerequest():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
+
+    if user is None:
+        return redirect(url_for('login'))
+
+    data = db.session.execute(
+        "select user_id, firstname, Email, lastname, DateLoaded from dbo.SAF_users_table where is_Approved = 1 order by DateLoaded desc")
+    result = []
+
+    for data in db.session.query(User).instances(data):
+        value = {
+            "user_id": data.user_id,
+            "Name": f"{data.firstname} {data.lastname}",
+            "DateLoaded": data.DateLoaded,
+            "Email": data.email
+        }
+
+        result.append(value)
+
+    # data = user.query.filter_by(is_Approved=0).order_by(User.DateLoaded).all()
+    # print(f"data: {result}")
+
+    return render_template('revokerequest.html', user=session['email'], data=result)
+
+
+
+@app.route('/revokerequest2', methods=["GET"])
+def revokerequest2():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    try:
+        user = User.query.filter_by(email=session['email']).first()
+    except Exception as e:
+        print(str(e))
+        user = None
+
+    if user is None:
+        return redirect(url_for('login'))
+
+    user_id = request.args.get('id')
+
+    try:
+        db.session.execute(f"delete from [dbo].[SAF_users_table] where user_id = {user_id}")
+        db.session.commit()
+        result = "User access was successfully revoked"
+    except Exception as e:
+        result = "Revoke user access failed, please try again."
+        print(str(e))
+
+    flash(result)
+
+    return redirect(url_for("revokerequest"))
+
 
 
 @app.route('/home')
@@ -2009,7 +2076,7 @@ def altdrivedatesentiment():
             if sentiment == 'All':
                 data = SRMS.daterange_altdrive(startdate, enddate)
             else:
-                data = SRMS.altdrive_daterange_filter_by_sentiment(sentiment, startdate, enddate)
+                data = SRMS.altdrive_daterarangenge_filter_by_sentiment(sentiment, startdate, enddate)
 
             return render_template('altdrivedate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)

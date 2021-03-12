@@ -198,6 +198,7 @@ a {
                     {% endif %}
                     {% if session['is_super_admin'] %}
                     <a class="collapse-item" href="{{ url_for ('adminrequest') }}" onclick="picture()"><b > User Admin Request</b></a>
+                    <a class="collapse-item" href="{{ url_for ('revokerequest') }}" onclick="picture()"><b > Revoke User Access</b></a>
                     {% endif %}
                 </div>
             </div>

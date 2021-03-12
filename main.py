@@ -1,5 +1,5 @@
 from application import app
-# altpay daterange deployment and Email Engine
+# Email bug fix
 
 if __name__ == "__main__":
     app.run(debug=True)

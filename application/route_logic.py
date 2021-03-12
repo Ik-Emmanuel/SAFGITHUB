@@ -13891,9 +13891,9 @@ class SRMS(object):
                 recipient_emails.clear()
                 recipient_emails.append('moses.ikeakhe@sterling.ng')
                 recipient_emails.append('Ikechukwu.Nwokocha@sterling.ng')
-                recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
-                recipient_emails.append('Chidimma.Uzoh@sterling.ng')
-                recipient_emails.append('OLAMIDE.JOLAOSO@sterling.ng')
+                # recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
+                # recipient_emails.append('Chidimma.Uzoh@sterling.ng')
+                # recipient_emails.append('OLAMIDE.JOLAOSO@sterling.ng')
 
             elif self.task == "Signup_User":
                 # first_name = str(full_name).split(' ')[0]
@@ -13945,7 +13945,7 @@ class SRMS(object):
 
                 recipient_emails.clear()
                 recipient_emails.append(email)
-                # recipient_emails.append('moses.ikeakhe@sterling.ng')
+                recipient_emails.append('moses.ikeakhe@sterling.ng')
                 # recipient_emails.append('Ikechukwu.Nwokocha@sterling.ng')
                 # recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
 
@@ -13996,9 +13996,9 @@ class SRMS(object):
                 recipient_emails.clear()
                 recipient_emails.append('moses.ikeakhe@sterling.ng')
                 recipient_emails.append('Ikechukwu.Nwokocha@sterling.ng')
-                recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
-                recipient_emails.append('Chidimma.Uzoh@sterling.ng')
-                recipient_emails.append('OLAMIDE.JOLAOSO@sterling.ng')
+                # recipient_emails.append('Oluseyi.Ajayi@sterling.ng')
+                # recipient_emails.append('Chidimma.Uzoh@sterling.ng')
+                # recipient_emails.append('OLAMIDE.JOLAOSO@sterling.ng')
             elif self.task == "Feedback_User":
                 html = """\
                             <html>
