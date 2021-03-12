@@ -409,7 +409,6 @@ def revokerequest():
     return render_template('revokerequest.html', user=session['email'], data=result)
 
 
-
 @app.route('/revokerequest2', methods=["GET"])
 def revokerequest2():
     if 'email' not in session:
@@ -437,7 +436,6 @@ def revokerequest2():
     flash(result)
 
     return redirect(url_for("revokerequest"))
-
 
 
 @app.route('/home')
