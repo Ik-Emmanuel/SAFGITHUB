@@ -1,5 +1,5 @@
 from application import app
-# Email bug fix
+# twitter post id added
 
 if __name__ == "__main__":
     app.run(debug=True)

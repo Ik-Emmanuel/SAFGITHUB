@@ -515,7 +515,7 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                                 like '%alt%' and Date = CAST (GETDATE() AS DATE)) as e order by date desc"
                 # -- and Date = '{self.today}' \
 
@@ -540,7 +540,8 @@ class SRMS(object):
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/twitter.png",
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9])
                         }
 
                         if str(return_value[i][7]) == "Positive":
