@@ -1621,6 +1621,8 @@ def branddatesentiment():
             else:
                 data = SRMS.brand_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
+            # print(data)
+
             return render_template('branddate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
     except Exception as e:
@@ -1757,6 +1759,8 @@ def instagramdatesentiment():
                 data = SRMS.ig_daterange(startdate, enddate)
             else:
                 data = SRMS.instagram_daterange_filter_by_sentiment(sentiment, startdate, enddate)
+
+            # print(data)
 
             return render_template('igdate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)

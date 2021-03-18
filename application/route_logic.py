@@ -98,18 +98,18 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltfinanceNg','AltfinanceNg') as username, \
-                            Text as post, Likes, comments,Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFfacebooksentiment where Date = CAST (GETDATE() AS DATE) union all\
+                            Text as post, Likes, comments,Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, isnull(0,0) as Id from sa.RefreshedSAFfacebooksentiment where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment \
+                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id from sa.RefreshedSAFfacebookcommentsentiment \
                             where Date = CAST (GETDATE() AS DATE) union all \
                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltfinanceNg','AltfinanceNg'), Instagram_Post as post, Likes,\
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFinstagramsentiment \
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as Id from sa.RefreshedSAFinstagramsentiment \
                             where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, \
-                            isnull(0,0) as comments, isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date\
+                            isnull(0,0) as comments, isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id\
                             from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                             like '%alt%' and Date = CAST (GETDATE() AS DATE)) as e order by date desc"
 
                 try:
@@ -130,7 +130,8 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -158,6 +159,7 @@ class SRMS(object):
                                                         "https://azermstorage.blob.core.windows.net/appimages/neg.jpg"]
 
                         post_data.append(data)
+
                 else:
                     # data["drop_down_emojie"]
                     # data["Sentiment_emojie"]
@@ -547,7 +549,7 @@ class SRMS(object):
                         if str(return_value[i][7]) == "Positive":
                             data["drop_down"] = ["Negative", "Neutral"]
                             data["drop_down_emojie"] = ["https://azermstorage.blob.core.windows.net/appimages/neg.jpg",
-                                                        "https://azermstorage.blob.core.windows.net/appimages/neg.jpg"]
+                                                        "https://azermstorage.blob.core.windows.net/appimages/neut.jpg"]
                             data["Sentiment_emojie"] = "https://azermstorage.blob.core.windows.net/appimages/pos.jpg"
                         elif str(return_value[i][7]) == "Negative":
                             data["drop_down"] = ["Positive", "Neutral"]
@@ -1089,9 +1091,9 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                                 select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFinstagramsentiment where Date = CAST (GETDATE() AS DATE) union all\
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id from sa.RefreshedSAFinstagramsentiment where Date = CAST (GETDATE() AS DATE) union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE)\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE)\
                               ) e\
                               order by Date desc"
                 # -- where Date = '{self.today}' \
@@ -1115,13 +1117,14 @@ class SRMS(object):
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/insta.png",
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9])
                         }
 
                         if str(return_value[i][7]) == "Positive":
                             data["drop_down"] = ["Negative", "Neutral"]
                             data["drop_down_emojie"] = ["https://azermstorage.blob.core.windows.net/appimages/neg.jpg",
-                                                        "https://azermstorage.blob.core.windows.net/appimages/neg.jpg"]
+                                                        "https://azermstorage.blob.core.windows.net/appimages/neut.jpg"]
                             data["Sentiment_emojie"] = "https://azermstorage.blob.core.windows.net/appimages/pos.jpg"
                         elif str(return_value[i][7]) == "Negative":
                             data["drop_down"] = ["Positive", "Neutral"]
@@ -1133,7 +1136,6 @@ class SRMS(object):
                             data["Sentiment_emojie"] = "https://azermstorage.blob.core.windows.net/appimages/neut.jpg"
                             data["drop_down_emojie"] = ["https://azermstorage.blob.core.windows.net/appimages/pos.jpg",
                                                         "https://azermstorage.blob.core.windows.net/appimages/neg.jpg"]
-
                         post_data.append(data)
                 else:
                     post_data = [{"Channel": "Instagram",
@@ -1374,15 +1376,15 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
-                            comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                            comments,Shares, Post_url,sentiment, Date, isnull(0,0) as Id from sa.RefreshedSAFfacebooksentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                            isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc'), Instagram_Post as post, Likes, \
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as Id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                             like '%alt%' and Date between '{startdate}' and '{enddate}'\
                             order by Date desc) as e order by Date desc"
                 # and \
@@ -1408,7 +1410,8 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -1422,7 +1425,7 @@ class SRMS(object):
                             data["drop_down"] = ["Negative", "Neutral"]
                             data["drop_down_emojie"] = [
                                 "https://azermstorage.blob.core.windows.net/appimages/neg.jpg",
-                                "https://azermstorage.blob.core.windows.net/appimages/neg.jpg"]
+                                "https://azermstorage.blob.core.windows.net/appimages/neut.jpg"]
                             data["Sentiment_emojie"] = "https://azermstorage.blob.core.windows.net/appimages/pos.jpg"
                         elif str(return_value[i][7]) == "Negative":
                             data["drop_down"] = ["Positive", "Neutral"]
@@ -1485,7 +1488,7 @@ class SRMS(object):
                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' union all\
                             select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive') as e union\
+                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive') as e union all\
                             select count(Instagram_Post) as sentiment from sa.RefreshedSAFinstagramsentiment) f"
 
                 # print('query 3')
@@ -1612,7 +1615,7 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                             select top 200 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                             like '%alt%' and Date between '{startdate}' and '{enddate}'\
                             order by Date desc) as e"
 
@@ -1637,7 +1640,8 @@ class SRMS(object):
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/twitter.png",
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9])
                         }
 
                         if str(return_value[i][7]) == "Positive":
@@ -1920,9 +1924,9 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                                 select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' union all\
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
                               ) e\
                               order by Date desc"
 
@@ -1945,7 +1949,8 @@ class SRMS(object):
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/insta.png",
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9])
                         }
 
                         if str(return_value[i][7]) == "Positive":
@@ -1958,7 +1963,6 @@ class SRMS(object):
                             data["drop_down_emojie"] = ["https://azermstorage.blob.core.windows.net/appimages/pos.jpg",
                                                         "https://azermstorage.blob.core.windows.net/appimages/neut.jpg"]
                             data["Sentiment_emojie"] = "https://azermstorage.blob.core.windows.net/appimages/neg.jpg"
-
                         else:
                             data["drop_down"] = ["Positive", "Negative"]
                             data["Sentiment_emojie"] = "https://azermstorage.blob.core.windows.net/appimages/neut.jpg"
@@ -10682,25 +10686,25 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                                 select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
-                                                comments,Shares, Post_url,sentiment, Date from sa.RefreshedSAFfacebooksentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                                                comments,Shares, Post_url,sentiment, Date, isnull(0,0) as Id from sa.RefreshedSAFfacebooksentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive' order by Date desc union all\
+                                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive' order by Date desc union all\
                                                 select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
-                                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as Id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' order by Date desc union all\
+                                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' order by Date desc union all\
                                                 select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                                                 like '%alt%' and Date between '{startdate}' and '{enddate}' and sentiment = 'Positive'\
                                                 order by Date desc) as e order by Date desc"
                 else:
                     query1 = f"select * from(\
                                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' order by Date desc union all\
+                                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' order by Date desc union all\
                                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' order by Date desc union all\
+                                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' order by Date desc union all\
                                                 select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                                                 like '%alt%' and Date between '{startdate}' and '{enddate}' and sentiment = '{sentiment}'\
                                                 order by Date desc) as e order by Date desc"
                     # and \
@@ -10726,7 +10730,8 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -10742,7 +10747,7 @@ class SRMS(object):
                             data["drop_down"] = ["Negative", "Neutral"]
                             data["drop_down_emojie"] = [
                                 "https://azermstorage.blob.core.windows.net/appimages/neg.jpg",
-                                "https://azermstorage.blob.core.windows.net/appimages/neg.jpg"]
+                                "https://azermstorage.blob.core.windows.net/appimages/neut.jpg"]
                             data[
                                 "Sentiment_emojie"] = "https://azermstorage.blob.core.windows.net/appimages/pos.jpg"
                         elif str(return_value[i][7]) == "Negative":
@@ -10809,7 +10814,7 @@ class SRMS(object):
                                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' union all\
                                             select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive') as e union\
+                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive') as e union all\
                                             select count(Instagram_Post) as sentiment from sa.RefreshedSAFinstagramsentiment) f"
 
                 # print('query 3')
@@ -10937,7 +10942,7 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                                             select top 200 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                                             like '%alt%' and Date between '{startdate}' and '{enddate}' and sentiment = '{sentiment}'\
                                             order by Date desc) as e"
 
@@ -10962,7 +10967,8 @@ class SRMS(object):
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/twitter.png",
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9])
                         }
 
                         if str(return_value[i][7]) == "Positive":
@@ -11277,15 +11283,15 @@ class SRMS(object):
                 if sentiment == 'Positive':
                     query1 = f"select * from(\
                                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Instagram_Post as post, Likes, \
-                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' union all\
+                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' union all\
                                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
+                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
                                           and comment_sentiment = 'Positive') e\
                                           order by Date desc"
                 else:
                     query1 = f"select * from(\
                                             select top 200 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
+                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
                                           and comment_sentiment = '{sentiment}') e\
                                           order by Date desc"
 
@@ -11308,7 +11314,8 @@ class SRMS(object):
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/insta.png",
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9])
                         }
 
                         if str(return_value[i][7]) == "Positive":
