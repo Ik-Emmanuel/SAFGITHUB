@@ -357,23 +357,69 @@ overflow: auto;
             {% for result in data['Post_data'] %} 
 
    
+
             <div class="d-flex w-100 justify-content-between" >
-              <h5 class="mb-1"style="color:#000000;">   <img  style="height: 30px; width: 38px;" src="{{result['Channel_logo']}}" alt="logo" class="logo"> <b style="color: #000000;"> {{result['Username']}}</b></h5> <br> <br> <b style="color:#000000;">{{result['Date']}}</b>
-               <!-- <h5 class="mb-1"> Username: {{result['Username']}}</h5> <br> <br> -->
-   <!--             <small>3 days ago</small> -->
+              <h5 class="mb-1"style="color:#000000;">   <img  style="height: 30px; width: 38px;" src="{{result['Channel_logo']}}" alt="logo" class="logo"> <b style="color: #000000;"> {{result['Username']}} </b></h5> <br> <br> <b style="color:#000000;">{{result['Date']}}</b>
+          
              </div>
             <a href=" {{result['Post_url']}}" target="_blank" style="text-decoration: none;"> <p class="mb-1" style=" color: black; background-color: rgba(100, 148, 237, 0.144);" > {{result['Post']}}</p> </a>
          
             
             
             
-            <h5  class="mb-1" style=" text-shadow: 0.9px 0.9px 0.9px #000000;" > <img  style="height: 30px; width: 50px; padding-left: 1em; " src="https://azermstorage.blob.core.windows.net/appimages/like.png" alt="logo" class="logo"> 
+            <h5  class="mb-1" style=" text-shadow: 0.9px 0.9px 0.9px #000000;" > 
+
+              <div>
+              <img  id="loader" style=" display:none; height: 20px; width: 20px; top: 0.1em; left: 37%; position: relative;" src="static/gad.gif" > <br>
+             </div>
+             <input id="channel-{{result['Id']}}" style="width: 0%; visibility: hidden;" value="{{result['Channel']}}">
+             <input id="ID-{{result['Id']}}" style="width: 0%; visibility: hidden;" value="{{result['Id']}}">
+              
+              
+              <img  style="height: 30px; width: 50px; padding-left: 1em; " src="https://azermstorage.blob.core.windows.net/appimages/like.png" alt="logo" class="logo"> 
              {{result['Likes']}} <img  style="height: 30px; width: 50px; padding-left: 1em;" src="https://azermstorage.blob.core.windows.net/appimages/comment.png" alt="logo" class="logo">  {{result['Comments']}}   <img  style="height: 30px; width: 50px; padding-left: 1em;" src="https://azermstorage.blob.core.windows.net/appimages/share.png" alt="logo" class="logo">  {{result['Shares']}}
-            <img  style="height: 30px; width: 50px; padding-left: 1em;" src="{{result['Sentiment_emojie']}}" id="myimage" alt="logo" class="logo"> <select style="border-radius: 10px;" onchange="choice1(this)" >
+
+
+            <img  style="height: 30px; width: 50px; padding-left: 1em;" src="{{result['Sentiment_emojie']}}" id="img-{{result['Id']}}" alt="logo" class="logo"> <select id="brand-{{result['Id']}}"  style="border-radius: 10px;"  >
               <option value="sentiment">{{result["Sentiment"]}}</option>
               <option value="other1">{{result["drop_down"][0]}}</option>
               <option value="other2">{{result["drop_down"][1]}}</option>
               </select>  </h5> 
+
+              <script>
+                var sentiment_select = document.getElementById('brand-{{result['Id']}}');
+
+        
+                sentiment_select.onchange = function(){
+                    sentiment = $("#brand-{{result['Id']}} option:selected").text();
+                    channel_find = document.getElementById('channel-{{result['Id']}}');
+                    ID_find = document.getElementById('ID-{{result['Id']}}');
+                    image =  document.getElementById('img-{{result['Id']}}');
+                    channel = channel_find.value;
+                    post_id = ID_find.value;
+                    document.getElementById('loader').style.display='block';
+        
+                    fetch('/sentchange/' + sentiment + '$' + channel + '$' + post_id).then(function(response) {
+        
+                        response.json().then(function(data){
+        
+                    if (data.error) {
+                        $('#errorAlert').text(data.error).show();
+                        $('#successAlert').hide();
+                        document.getElementById('loader').style.display='none';
+                    }
+                    else {
+                        $('#successAlert').text(data.message).show();
+                        image.src = data.link
+                        $('#errorAlert').hide();
+                        document.getElementById('loader').style.display='none';
+                    }
+                });
+                        });
+        
+        
+                }
+            </script>
              
 
                {% if result['Channel_logo'] == 'https://azermstorage.blob.core.windows.net/appimages/twitter.png' %}

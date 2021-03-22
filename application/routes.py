@@ -9,7 +9,49 @@ from application.models import User
 global SRMS
 SRMS = SRMS()
 
+############################################################### sentiment change #########################################################################
+@app.route('/sentchange/<value>')
+def sent(value):
+    
+    sent = value
+    first = sent.split("$")[0]
+    second = sent.split("$")[1]
+    third = sent.split("$")[2]
+   
+    # print(sent)
+    # print(first)
+    # print(second)
+    # print(third)
+     
+    if sent:
+        variables = sent
+        if first.strip() == "Positive":
+            link = "https://azermstorage.blob.core.windows.net/appimages/pos.png"
+        elif first.strip() == "Neutral":
+            link = "https://azermstorage.blob.core.windows.net/appimages/neut.png"
+            
+        else:
+            link = "https://azermstorage.blob.core.windows.net/appimages/neg.png"
+        # try:
+        #     db.session.execute(f"update [sa].[RefreshedSAFtwitterbanksentiment2] set sentiment = '{first}' where id_str = '{third}'")
+        #     db.session.commit()
+        #     message = f"Sentiment changed to {first}"
 
+        # except Exception as e:
+        #     result = "User access approval failed, please try again."
+        #     print(str(e))
+            
+
+ 
+        return jsonify({'message' : variables, 'link':link })
+ 
+    return jsonify({'error' : 'Something went wrong!'})
+
+
+
+
+
+#########################################################################################################################################################
 @app.route('/')
 def login():
     if 'email' in session:
