@@ -296,7 +296,7 @@ overflow: auto;
               
                
              <div>
-              <img  id="loader" style=" display:none; height: 20px; width: 20px; top: 0.1em; left: 37%; position: relative;" src="static/gad.gif" > <br>
+              <img  id="loader-{{result['Id']}}" style=" display:none; height: 20px; width: 20px; top: 0.1em; left: 37%; position: relative;" src="static/gad.gif" > <br>
              </div>
              <input id="channel-{{result['Id']}}" style="width: 0%; visibility: hidden;" value="{{result['Channel']}}">
              <input id="ID-{{result['Id']}}" style="width: 0%; visibility: hidden;" value="{{result['Id']}}">
@@ -323,7 +323,7 @@ overflow: auto;
                     image =  document.getElementById('img-{{result['Id']}}');
                     channel = channel_find.value;
                     post_id = ID_find.value;
-                    document.getElementById('loader').style.display='block';
+                    document.getElementById('loader-{{result['Id']}}').style.display='block';
         
                     fetch('/sentchange/' + sentiment + '$' + channel + '$' + post_id).then(function(response) {
         
@@ -332,13 +332,13 @@ overflow: auto;
                     if (data.error) {
                         $('#errorAlert').text(data.error).show();
                         $('#successAlert').hide();
-                        document.getElementById('loader').style.display='none';
+                        document.getElementById('loader-{{result['Id']}}').style.display='none';
                     }
                     else {
                         $('#successAlert').text(data.message).show();
                         image.src = data.link
                         $('#errorAlert').hide();
-                        document.getElementById('loader').style.display='none';
+                        document.getElementById('loader-{{result['Id']}}').style.display='none';
                     }
                 });
                         });
