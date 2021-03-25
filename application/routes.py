@@ -45,7 +45,7 @@ def sent(value):
  
         return jsonify({'message' : variables, 'link':link })
  
-    return jsonify({'error' : 'Something went wrong!'})
+    return jsonify({'error': 'Something went wrong!'})
 
 
 
