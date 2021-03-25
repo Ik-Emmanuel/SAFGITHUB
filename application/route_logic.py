@@ -110,7 +110,7 @@ class SRMS(object):
                             from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                            like '%alt%' and Date = CAST (GETDATE() AS DATE)) as e order by date desc"
+                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE)) as e order by date desc"
 
                 try:
                     self.cursor.execute(query1)
@@ -188,7 +188,7 @@ class SRMS(object):
                                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE)  union all\
                                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                like '%alt%' and Date = CAST (GETDATE() AS DATE)) as e"
+                                                like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE)) as e"
                 try:
                     self.cursor.execute(query2)
                     return_value = self.cursor.fetchall()
@@ -211,7 +211,7 @@ class SRMS(object):
                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where comment_sentiment = 'Positive' and Date = CAST (GETDATE() AS DATE) union all\
                             select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                            like '%alt%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e union\
+                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e union\
                             select count(Instagram_Post) as sentiment from sa.RefreshedSAFinstagramsentiment where Date = CAST (GETDATE() AS DATE) ) f"
 
                 # print('query 3')
@@ -237,7 +237,7 @@ class SRMS(object):
                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where comment_sentiment = 'Negative' and Date = CAST (GETDATE() AS DATE) union all\
                             select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                            like '%alt%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Negative') as e"
+                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE) and sentiment = 'Negative') as e"
 
                 # print('query 4')
                 try:
@@ -262,7 +262,7 @@ class SRMS(object):
                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where comment_sentiment = 'Neutral' and Date = CAST (GETDATE() AS DATE) union all\
                             select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                            like '%alt%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Neutral') as e"
+                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE) and sentiment = 'Neutral') as e"
 
                 # print('query 5')
                 try:
@@ -290,7 +290,7 @@ class SRMS(object):
                                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and comment_sentiment = 'Positive' union all\
                                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                                 retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                                and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Positive') as e\
+                                                and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Positive') as e\
                                                 ) as a\
                                                 group by [sentiment]\
                                                 union\
@@ -307,7 +307,7 @@ class SRMS(object):
                                                 and comment_sentiment = 'Positive' union all\
                                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                                 retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                                and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Positive') as e\
+                                                and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Positive') as e\
                                                 group by [sentiment]) a\
                                                 group by [sentiment])a"
 
@@ -351,7 +351,7 @@ class SRMS(object):
                                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and comment_sentiment = 'Negative' union all\
                                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                like '%alt%' and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Negative') as e\
+                                                like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Negative') as e\
                                                 ) as a\
                                                 group by [sentiment]\
                                                 union\
@@ -368,7 +368,7 @@ class SRMS(object):
                                                 and comment_sentiment = 'Negative' union all\
                                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                like '%alt%' and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Negative') as e\
+                                                like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Negative') as e\
                                                 group by [sentiment]) a\
                                                 group by [sentiment])a"
 
@@ -417,7 +417,7 @@ class SRMS(object):
                                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and comment_sentiment = 'Neutral' union all\
                                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                like '%alt%' and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Neutral') as e\
+                                                like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Neutral') as e\
                                                 ) as a\
                                                 group by [sentiment]\
                                                 union\
@@ -434,7 +434,7 @@ class SRMS(object):
                                                 and comment_sentiment = 'Neutral' union all\
                                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                like '%alt%' and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Neutral') as e\
+                                                like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Neutral') as e\
                                                 group by [sentiment]) a\
                                                 group by [sentiment])a"
 
@@ -463,7 +463,7 @@ class SRMS(object):
                 else:
                     result['Neutral_%change'] = "0% change from yesterday"
 
-                query9 = "select Hashtags, tweet_text, Date from sa.RefreshedSAFtwitterbanksentiment2 where Hashtags != 'None' and Date = CAST(GETDATE() AS DATE) and tweet_text like '%alt%'"
+                query9 = "select Hashtags, tweet_text, Date from sa.RefreshedSAFtwitterbanksentiment2 where Hashtags != 'None' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST(GETDATE() AS DATE) and tweet_text like '%alt%'"
                 try:
                     self.cursor.execute(query9)
                 except Exception as e:
@@ -518,7 +518,7 @@ class SRMS(object):
                 query1 = f"select * from(\
                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                like '%alt%' and Date = CAST (GETDATE() AS DATE)) as e order by date desc"
+                                like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE)) as e order by date desc"
                 # -- and Date = '{self.today}' \
 
                 try:
@@ -575,7 +575,7 @@ class SRMS(object):
                                   'Sentiment_emojie': "https://azermstorage.blob.core.windows.net/appimages/pos.jpg",
                                   'drop_down': ["Negative", "Neutral"]}]
 
-                query2 = f"select count(*) total_mentions from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%' and Date = CAST (GETDATE() AS DATE)"
+                query2 = f"select count(*) total_mentions from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE)"
 
                 self.cursor.execute(query2)
                 return_value = self.cursor.fetchall()
@@ -589,7 +589,7 @@ class SRMS(object):
                     # print(f"total_mentions: {result['total_mentions']}")
 
                 query3 = f"select count(sentiment) as sentiment from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                            like '%alt%' and Sentiment = 'Positive' and Date = CAST (GETDATE() AS DATE)"
+                                            like '%alt%' and Sentiment = 'Positive' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE)"
 
                 # print('query 3')
                 try:
@@ -608,7 +608,7 @@ class SRMS(object):
                     # print(f"Positve_count: {result['Positve_count']}")
 
                 query4 = f"select count(sentiment) as sentiment from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                            like '%alt%' and Sentiment = 'Negative' and Date = CAST (GETDATE() AS DATE)"
+                                                            like '%alt%' and Sentiment = 'Negative' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE)"
 
                 # print('query 4')
                 try:
@@ -627,7 +627,7 @@ class SRMS(object):
                     # print(f"Negative_count: {result['Negative_count']}")
 
                 query5 = f"select count(sentiment) as sentiment from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                            like '%alt%' and Sentiment = 'Neutral' and Date = CAST (GETDATE() AS DATE)"
+                                                            like '%alt%' and Sentiment = 'Neutral' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE)"
 
                 # print('query 5')
                 try:
@@ -651,11 +651,11 @@ class SRMS(object):
                 query6 = "select ([CurrentdayTotal] - [YesterdayTotal])/([YesterdayTotal]) Current_Yesterday, [sentiment] from (\
                             select sum([CurrentdayTotal]) [CurrentdayTotal], sum([YesterdayTotal]) [YesterdayTotal], [sentiment] from(\
                             select 0 [YesterdayTotal], cast(COUNT([sentiment]) as float) [CurrentdayTotal], [sentiment] from\
-                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Positive'\
+                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select convert(varchar(10), getdate(), 120)) and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [sentiment] = 'Positive'\
                             group by [sentiment]\
                             union\
                             select cast(COUNT([sentiment]) as float) [YesterdayTotal], 0 [CurrentdayTotal], [sentiment] from\
-                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Positive'\
+                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [sentiment] = 'Positive'\
                             group by [sentiment])a group by [sentiment]\
                             )a"
                 try:
@@ -691,11 +691,11 @@ class SRMS(object):
                 query7 = "select ([CurrentdayTotal] - [YesterdayTotal])/([YesterdayTotal]) Current_Yesterday, [sentiment] from (\
                             select sum([CurrentdayTotal]) [CurrentdayTotal], sum([YesterdayTotal]) [YesterdayTotal], [sentiment] from(\
                             select 0 [YesterdayTotal], cast(COUNT([sentiment]) as float) [CurrentdayTotal], [sentiment] from\
-                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Negative'\
+                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select convert(varchar(10), getdate(), 120)) and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [sentiment] = 'Negative'\
                             group by [sentiment]\
                             union\
                             select cast(COUNT([sentiment]) as float) [YesterdayTotal], 0 [CurrentdayTotal], [sentiment] from\
-                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Negative'\
+                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [sentiment] = 'Negative'\
                             group by [sentiment])a group by [sentiment]\
                             )a"
                 try:
@@ -732,11 +732,11 @@ class SRMS(object):
                 query8 = "select ([CurrentdayTotal] - [YesterdayTotal])/([YesterdayTotal]) Current_Yesterday, [sentiment] from (\
                             select sum([CurrentdayTotal]) [CurrentdayTotal], sum([YesterdayTotal]) [YesterdayTotal], [sentiment] from(\
                             select 0 [YesterdayTotal], cast(COUNT([sentiment]) as float) [CurrentdayTotal], [sentiment] from\
-                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Neutral'\
+                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select convert(varchar(10), getdate(), 120)) and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [sentiment] = 'Neutral'\
                             group by [sentiment]\
                             union\
                             select cast(COUNT([sentiment]) as float) [YesterdayTotal], 0 [CurrentdayTotal], [sentiment] from\
-                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Neutral'\
+                            sa.RefreshedSAFtwitterbanksentiment2 where [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [sentiment] = 'Neutral'\
                             group by [sentiment])a group by [sentiment]\
                             )a"
                 try:
@@ -762,7 +762,7 @@ class SRMS(object):
                 else:
                     result['Neutral_%change'] = "0% change from yesterday"
 
-                query9 = "select Hashtags from sa.RefreshedSAFtwitterbanksentiment2 where Hashtags != 'None' and tweet_text like '%alt%' and Date = CAST (GETDATE() AS DATE)"
+                query9 = "select Hashtags from sa.RefreshedSAFtwitterbanksentiment2 where Hashtags != 'None' and tweet_text like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE)"
                 try:
                     self.cursor.execute(query9)
                     return_value = self.cursor.fetchall()
@@ -1375,17 +1375,17 @@ class SRMS(object):
                 post_data = []
 
                 query1 = f"select * from(\
-                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
+                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
                             comments,Shares, Post_url,sentiment, Date, isnull(0,0) as Id from sa.RefreshedSAFfacebooksentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                             isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
-                            select top 100 isnull('Instagram','Instagram') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc'), Instagram_Post as post, Likes, \
+                            select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
                             Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as Id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                            like '%alt%' and Date between '{startdate}' and '{enddate}'\
+                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}'\
                             order by Date desc) as e order by Date desc"
                 # and \
                 # Date = '{self.today}' \
@@ -1463,7 +1463,7 @@ class SRMS(object):
                                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' union all\
                                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                like '%alt%' and Date between '{startdate}' and '{enddate}') as e"
+                                                like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}') as e"
                 try:
                     self.cursor.execute(query2)
                     return_value = self.cursor.fetchall()
@@ -1488,7 +1488,7 @@ class SRMS(object):
                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' union all\
                             select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive') as e union all\
+                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive') as e union all\
                             select count(Instagram_Post) as sentiment from sa.RefreshedSAFinstagramsentiment) f"
 
                 # print('query 3')
@@ -1516,7 +1516,7 @@ class SRMS(object):
                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Negative' union all\
                             select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Negative') as e"
+                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Negative') as e"
 
                 # print('query 4')
                 try:
@@ -1543,7 +1543,7 @@ class SRMS(object):
                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Neutral' union all\
                             select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Neutral') as e"
+                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Neutral') as e"
 
                 # print('query 5')
                 try:
@@ -1561,7 +1561,7 @@ class SRMS(object):
 
                 # print(f"done with query 5")
 
-                query6 = f"select Hashtags from sa.RefreshedSAFtwitterbanksentiment2 where Date between '{startdate}' and '{enddate}' and tweet_text like '%alt%' and Hashtags != 'None'"
+                query6 = f"select Hashtags from sa.RefreshedSAFtwitterbanksentiment2 where Date between '{startdate}' and '{enddate}' and tweet_text like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Hashtags != 'None'"
                 try:
                     self.cursor.execute(query6)
                 except Exception as e:
@@ -1616,7 +1616,7 @@ class SRMS(object):
                 query1 = f"select * from(\
                             select top 200 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                            like '%alt%' and Date between '{startdate}' and '{enddate}'\
+                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}'\
                             order by Date desc) as e"
 
                 # print(f"query1: {query1}")
@@ -1689,7 +1689,7 @@ class SRMS(object):
                     result['total_mentions'] = 0
 
                 query3 = f"select count(sentiment) as sentiment from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive'"
+                                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive'"
 
                 # print('query 3')
                 try:
@@ -1708,7 +1708,7 @@ class SRMS(object):
                     # print(f"Positve_count: {result['Positve_count']}")
 
                 query4 = f"select count(sentiment) as sentiment from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Negative'"
+                                                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Negative'"
 
                 # print('query 4')
                 try:
@@ -1727,7 +1727,7 @@ class SRMS(object):
                     # print(f"Negative_count: {result['Negative_count']}")
 
                 query5 = f"select count(sentiment) as sentiment from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Neutral'"
+                                                            like '%alt%' username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and and Date between '{startdate}' and '{enddate}' and Sentiment = 'Neutral'"
 
                 # print('query 5')
                 try:
@@ -1743,7 +1743,7 @@ class SRMS(object):
                 else:
                     result['Neutral_count'] = 0
 
-                query6 = f"select Hashtags from sa.RefreshedSAFtwitterbanksentiment2 where Date between '{startdate}' and '{enddate}' and tweet_text like '%alt%' and Hashtags != 'None'"
+                query6 = f"select Hashtags from sa.RefreshedSAFtwitterbanksentiment2 where Date between '{startdate}' and '{enddate}' and tweet_text like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Hashtags != 'None'"
                 try:
                     self.cursor.execute(query6)
                 except Exception as e:
@@ -5139,7 +5139,7 @@ class SRMS(object):
                                     from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE) and comment_sentiment = 'Positive' union all\
                                     select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                     retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%' \
-                                    and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e order by date desc"
+                                    and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e order by date desc"
                 else:
                     query1 = f"select * from(\
                                     select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
@@ -5150,7 +5150,7 @@ class SRMS(object):
                                     from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE) and comment_sentiment = '{sentiment}' union all\
                                     select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                     retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                    and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}') as e order by date desc"
+                                    and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}') as e order by date desc"
                 try:
                     self.cursor.execute(query1)
                     return_value = self.cursor.fetchall()
@@ -5242,7 +5242,7 @@ class SRMS(object):
                                                     isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE)  union all\
                                                     select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                                     retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                                    and Date = CAST (GETDATE() AS DATE) ) as e"
+                                                    and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE) ) as e"
                 try:
                     self.cursor.execute(query2)
                     return_value = self.cursor.fetchall()
@@ -5266,7 +5266,7 @@ class SRMS(object):
                                 select isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where comment_sentiment = 'Positive' and Date = CAST (GETDATE() AS DATE) union all\
                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
-                                retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e union\
+                                retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e union all\
                                 select count(Instagram_Post) as sentiment from sa.RefreshedSAFinstagramsentiment where Date = CAST (GETDATE() AS DATE) ) f"
 
                 # print('query 3')
@@ -5291,7 +5291,7 @@ class SRMS(object):
                                 select isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where comment_sentiment = 'Negative' and Date = CAST (GETDATE() AS DATE) union all\
                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
-                                retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Negative') as e"
+                                retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE) and sentiment = 'Negative') as e"
 
                 # print('query 4')
                 try:
@@ -5316,7 +5316,7 @@ class SRMS(object):
                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where comment_sentiment = 'Neutral' and Date = CAST (GETDATE() AS DATE) union all\
                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                 retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                and Date = CAST (GETDATE() AS DATE) and sentiment = 'Neutral') as e"
+                                and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE) and sentiment = 'Neutral') as e"
 
                 # print('query 5')
                 try:
@@ -5344,7 +5344,7 @@ class SRMS(object):
                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and comment_sentiment = 'Positive' union all\
                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                 retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Positive') as e\
+                                and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Positive') as e\
                                 ) as a\
                                 group by [sentiment]\
                                 union\
@@ -5361,7 +5361,7 @@ class SRMS(object):
                                 and comment_sentiment = 'Positive' union all\
                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                 retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Positive') as e\
+                                and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Positive') as e\
                                 group by [sentiment]) a\
                                 group by [sentiment])a"
 
@@ -5410,7 +5410,7 @@ class SRMS(object):
                                                     isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and comment_sentiment = 'Negative' union all\
                                                     select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                                     retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                                    and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Negative') as e\
+                                                    and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Negative') as e\
                                                     ) as a\
                                                     group by [sentiment]\
                                                     union\
@@ -5427,7 +5427,7 @@ class SRMS(object):
                                                     and comment_sentiment = 'Negative' union all\
                                                     select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                                     retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                                    and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Negative') as e\
+                                                    and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Negative') as e\
                                                     group by [sentiment]) a\
                                                     group by [sentiment])a"
 
@@ -5483,7 +5483,7 @@ class SRMS(object):
                                                     isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where [Date] = (select convert(varchar(10), getdate(), 120)) and comment_sentiment = 'Neutral' union all\
                                                     select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                                     retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                                    and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Neutral') as e\
+                                                    and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select convert(varchar(10), getdate(), 120)) and [sentiment] = 'Neutral') as e\
                                                     ) as a\
                                                     group by [sentiment]\
                                                     union\
@@ -5500,7 +5500,7 @@ class SRMS(object):
                                                     and comment_sentiment = 'Neutral' union all\
                                                     select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
                                                     retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
-                                                    and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Neutral') as e\
+                                                    and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and [Date] = (select dateadd(dd,-1, cast(getdate() as date))) and [sentiment] = 'Neutral') as e\
                                                     group by [sentiment]) a\
                                                     group by [sentiment])a"
 
@@ -5529,7 +5529,7 @@ class SRMS(object):
                 else:
                     result['Neutral_%change'] = "0% change from yesterday"
 
-                query9 = "select Hashtags, tweet_text, Date from sa.RefreshedSAFtwitterbanksentiment2 where Hashtags != 'None' and Date = CAST(GETDATE() AS DATE) and tweet_text like '%alt%'"
+                query9 = "select Hashtags, tweet_text, Date from sa.RefreshedSAFtwitterbanksentiment2 where Hashtags != 'None' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST(GETDATE() AS DATE) and tweet_text like '%alt%'"
                 try:
                     self.cursor.execute(query9)
                 except Exception as e:
