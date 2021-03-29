@@ -812,7 +812,7 @@ def altdrive():
     else:
         SRMS.database_connection()
         data = SRMS.altdrive()
-        print(f"'altdrive data': {data}")
+        # print(f"'altdrive data': {data}")
         return render_template('altdrive.html', user=session['email'], data=data)
 
 
@@ -1140,7 +1140,7 @@ def selectdatealtdrive():
 
         SRMS.database_connection()
         data = SRMS.daterange_altdrive(startdate, enddate)
-        print(f"'Altdrive_date_range_data': {data}")
+        # print(f"'Altdrive_date_range_data': {data}")
         return render_template('altdrivedate.html', user=session['email'], data=data, startdate=startdate,
                                enddate=enddate)
 
@@ -1457,7 +1457,7 @@ def altpaychannel():
 
             data = SRMS.altpay_filter_by_channel(platform)
 
-            print(f"Altpay channel: {data}")
+            # print(f"Altpay channel: {data}")
 
             return render_template('altpay.html', user=session['email'], data=data)
     except Exception as e:
@@ -1572,7 +1572,7 @@ def altdrivesentiment():
 
             data = SRMS.altdrive_filter_by_sentiment(sentiment)
 
-            print(f"altdrive sentiment: {data}")
+            # print(f"altdrive sentiment: {data}")
 
             return render_template('altdrive.html', user=session['email'], data=data)
     except Exception as e:
@@ -1611,7 +1611,7 @@ def altdrivechannel():
 
             data = SRMS.altdrive_filter_by_channel(platform)
 
-            print(f"altdrive channel: {data}")
+            # print(f"altdrive channel: {data}")
 
             return render_template('altdrive.html', user=session['email'], data=data)
     except Exception as e:
@@ -1733,7 +1733,6 @@ def branddatesentiment():
             else:
                 data = SRMS.brand_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            # print(data)
 
             return render_template('branddate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -1872,7 +1871,7 @@ def instagramdatesentiment():
             else:
                 data = SRMS.instagram_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            # print(data)
+       
 
             return render_template('igdate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -2200,7 +2199,7 @@ def altdrivedatesentiment():
             else:
                 data = SRMS.altdrive_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
-            print(f"altmrive date range sentiment: {data}")
+            # print(f"altmrive date range sentiment: {data}")
 
             return render_template('altdrivedate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
