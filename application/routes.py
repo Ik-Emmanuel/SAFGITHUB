@@ -9,46 +9,102 @@ from application.models import User
 global SRMS
 SRMS = SRMS()
 
+
 ############################################################### sentiment change #########################################################################
-@app.route('/sentchange/<value>')
+@app.route('/api/sentiment-change/<value>')
 def sent(value):
-    
-    sent = value
-    first = sent.split("$")[0]
-    second = sent.split("$")[1]
-    third = sent.split("$")[2]
-   
-    # print(sent)
-    # print(first)
-    # print(second)
-    # print(third)
-     
-    if sent:
-        variables = sent
-        if first.strip() == "Positive":
-            link = "https://azermstorage.blob.core.windows.net/appimages/pos.png"
-        elif first.strip() == "Neutral":
-            link = "https://azermstorage.blob.core.windows.net/appimages/neut.png"
-            
+    try:
+
+        if value:
+            message = None
+            sentiment = None
+            table = None
+            result = None
+            sentiment_column = None
+            id_column = None
+
+            sentiment = value.split("$")[0].strip()
+            platform = value.split("$")[1]
+            id = value.split("$")[2]
+            platform_id = int(value.split("$")[3])
+
+            if platform_id == 1:
+                table = ""
+                id_column = ""
+                sentiment_column = ""
+
+            if platform_id == 2:
+                table = ""
+                id_column = ""
+                sentiment_column = ""
+
+            if platform_id == 3:
+                table = "sa.refreshedsafinstagramsentiment"
+                id_column = "post_id"
+
+            if platform_id == 4:
+                table = "sa.RefreshedSAFinstagramcommentsentiment"
+                id_column = "id"
+                sentiment_column = "comment_sentiment"
+
+            if platform_id == 5:
+                table = "[sa].[RefreshedSAFtwitterbanksentiment2]"
+                id_column = "id_str"
+                sentiment_column = "sentiment"
+
+            if platform_id == 6:
+                table = "sa.RefreshedAltmallInstagramSentiment"
+                id_column = "post_id"
+                sentiment_column = ""
+
+            if platform_id == 7:
+                table = "sa.RefreshedAltmallInstagramCommentSentiment"
+                id_column = "id"
+                sentiment_column = "comment_sentiment"
+
+            if platform_id == 8:
+                table = "[sa].[RefreshedAltdriveInstagramSentiment]"
+                id_column = "post_id"
+
+            if platform_id == 9:
+                table = "[sa].[RefreshedAltdriveInstagramCommentSentiment]"
+                id_column = "id"
+                sentiment_column = "comment_sentiment"
+
+            if sentiment == "Positive":
+                sentiment_emojie = "https://azermstorage.blob.core.windows.net/appimages/pos.png"
+            elif sentiment == "Neutral":
+                sentiment_emojie = "https://azermstorage.blob.core.windows.net/appimages/neut.png"
+
+            else:
+                sentiment_emojie = "https://azermstorage.blob.core.windows.net/appimages/neg.png"
+
+            try:
+                if platform_id in [3, 6, 8]:
+                    message = f"Sentiment changed to {sentiment}"
+                else:
+                    db.session.execute(f"update {table} set {sentiment_column} = '{sentiment}' where {id_column} = '{id}'")
+                    db.session.commit()
+
+                    message = f"Sentiment changed to {sentiment}"
+
+                result = {'message': message, 'link': sentiment_emojie}
+
+            except Exception as e:
+                message = "Sentiment change failed, please try again."
+                print(str(e))
+
+                result = {'error': message}
+
         else:
-            link = "https://azermstorage.blob.core.windows.net/appimages/neg.png"
-        # try:
-        #     db.session.execute(f"update [sa].[RefreshedSAFtwitterbanksentiment2] set sentiment = '{first}' where id_str = '{third}'")
-        #     db.session.commit()
-        #     message = f"Sentiment changed to {first}"
+            result = {'error': 'Sentiment change failed, please try again.'}
 
-        # except Exception as e:
-        #     result = "User access approval failed, please try again."
-        #     print(str(e))
-            
+    except Exception as e:
+        print(str(e))
 
- 
-        return jsonify({'message' : variables, 'link':link })
- 
-    return jsonify({'error': 'Something went wrong!'})
+        result = {'error': 'Sentiment change failed, please try again.'}
 
-
-
+    return jsonify(result)
 
 
 #########################################################################################################################################################
@@ -756,7 +812,7 @@ def altdrive():
     else:
         SRMS.database_connection()
         data = SRMS.altdrive()
-        # print(f"'altdrive data': {data}")
+        print(f"'altdrive data': {data}")
         return render_template('altdrive.html', user=session['email'], data=data)
 
 
@@ -980,7 +1036,9 @@ def selectdatealtpower():
 
             SRMS.database_connection()
             data = SRMS.daterange_altpower(startdate, enddate)
-            # print(f"'Specta_date_range_data': {data}")
+
+            # print(f"'Altpower_date_range_data': {data}")
+
             return render_template('altpowerdate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
     except Exception as e:
@@ -1082,7 +1140,7 @@ def selectdatealtdrive():
 
         SRMS.database_connection()
         data = SRMS.daterange_altdrive(startdate, enddate)
-        # print(f"'Altdrive_date_range_data': {data}")
+        print(f"'Altdrive_date_range_data': {data}")
         return render_template('altdrivedate.html', user=session['email'], data=data, startdate=startdate,
                                enddate=enddate)
 
@@ -1282,6 +1340,8 @@ def altpowersentiment():
 
             data = SRMS.altpower_filter_by_sentiment(sentiment)
 
+            # print(f"'Altpower_sentiment_data': {data}")
+
             return render_template('altpower.html', user=session['email'], data=data)
     except Exception as e:
         print(str(e))
@@ -1318,6 +1378,8 @@ def altpowerchannel():
             SRMS.database_connection()
 
             data = SRMS.altpower_filter_by_channel(platform)
+
+            # print(f"'Altpower_channel_data': {data}")
 
             return render_template('altpower.html', user=session['email'], data=data)
     except Exception as e:
@@ -1356,6 +1418,8 @@ def altpaysentiment():
 
             data = SRMS.altpay_filter_by_sentiment(sentiment)
 
+            # print(f"AltpaySentiment: {data}")
+
             return render_template('altpay.html', user=session['email'], data=data)
     except Exception as e:
         print(str(e))
@@ -1392,6 +1456,8 @@ def altpaychannel():
             SRMS.database_connection()
 
             data = SRMS.altpay_filter_by_channel(platform)
+
+            print(f"Altpay channel: {data}")
 
             return render_template('altpay.html', user=session['email'], data=data)
     except Exception as e:
@@ -1506,6 +1572,8 @@ def altdrivesentiment():
 
             data = SRMS.altdrive_filter_by_sentiment(sentiment)
 
+            print(f"altdrive sentiment: {data}")
+
             return render_template('altdrive.html', user=session['email'], data=data)
     except Exception as e:
         print(str(e))
@@ -1542,6 +1610,8 @@ def altdrivechannel():
             SRMS.database_connection()
 
             data = SRMS.altdrive_filter_by_channel(platform)
+
+            print(f"altdrive channel: {data}")
 
             return render_template('altdrive.html', user=session['email'], data=data)
     except Exception as e:
@@ -1850,6 +1920,8 @@ def altpowerdatesentiment():
             else:
                 data = SRMS.altpower_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
+            # print(f"'Altpower_date_sentiment_data': {data}")
+
             return render_template('altpowerdate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
     except Exception as e:
@@ -1894,6 +1966,8 @@ def altpowerdatechannel():
                 data = SRMS.daterange_altpower(startdate, enddate)
             else:
                 data = SRMS.altpower_daterange_filter_by_channel(platform, startdate, enddate)
+
+            # print(f"'Altpower_date_channel_data': {data}")
 
             return render_template('altpowerdate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -2032,6 +2106,8 @@ def altmalldatesentiment():
             else:
                 data = SRMS.altmall_daterange_filter_by_sentiment(sentiment, startdate, enddate)
 
+            # print(f"altmall date range sentiment: {data}")
+
             return render_template('altmalldate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
     except Exception as e:
@@ -2075,6 +2151,8 @@ def altmalldatechannel():
                 data = SRMS.daterange_altmall(startdate, enddate)
             else:
                 data = SRMS.altmall_daterange_filter_by_channel(platform, startdate, enddate)
+
+            # print(f"altmall date range channel: {data}")
 
             return render_template('altmalldate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -2120,7 +2198,9 @@ def altdrivedatesentiment():
             if sentiment == 'All':
                 data = SRMS.daterange_altdrive(startdate, enddate)
             else:
-                data = SRMS.altdrive_daterarangenge_filter_by_sentiment(sentiment, startdate, enddate)
+                data = SRMS.altdrive_daterange_filter_by_sentiment(sentiment, startdate, enddate)
+
+            print(f"altmrive date range sentiment: {data}")
 
             return render_template('altdrivedate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -2167,6 +2247,8 @@ def altdrivedatechannel():
             else:
                 data = SRMS.altdrive_daterange_filter_by_channel(platform, startdate, enddate)
 
+            # print(f"altdrive date range channel: {data}")
+
             return render_template('altdrivedate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
     except Exception as e:
@@ -2210,6 +2292,8 @@ def altpaydatesentiment():
                 data = SRMS.daterange_altpay(startdate, enddate)
             else:
                 data = SRMS.altpay_daterange_filter_by_sentiment(sentiment, startdate, enddate)
+
+            # print(f"altpay Daterange sentiment: {data}")
 
             return render_template('altpaydate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)
@@ -2255,6 +2339,8 @@ def altpaydatechannel():
                 data = SRMS.daterange_altpay(startdate, enddate)
             else:
                 data = SRMS.altpay_daterange_filter_by_channel(platform, startdate, enddate)
+
+            # print(f"altpay Daterange channel: {data}")
 
             return render_template('altpaydate.html', user=session['email'], data=data, startdate=startdate,
                                    enddate=enddate)

@@ -98,18 +98,18 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltfinanceNg','AltfinanceNg') as username, \
-                            Text as post, Likes, comments,Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, isnull(0,0) as Id from sa.RefreshedSAFfacebooksentiment where Date = CAST (GETDATE() AS DATE) union all\
+                            Text as post, Likes, comments,Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFfacebooksentiment where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id from sa.RefreshedSAFfacebookcommentsentiment \
+                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFfacebookcommentsentiment \
                             where Date = CAST (GETDATE() AS DATE) union all \
                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltfinanceNg','AltfinanceNg'), Instagram_Post as post, Likes,\
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as Id from sa.RefreshedSAFinstagramsentiment \
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as Id, isnull(3,3) as platform_id from sa.RefreshedSAFinstagramsentiment \
                             where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, \
-                            isnull(0,0) as comments, isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id\
+                            isnull(0,0) as comments, isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id\
                             from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                             like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE)) as e order by date desc"
 
                 try:
@@ -131,7 +131,8 @@ class SRMS(object):
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
                             'Date': str(return_value[i][8]),
-                            'Id': str(return_value[i][9])
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -517,7 +518,7 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT , id_str) as id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                                 like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE)) as e order by date desc"
                 # -- and Date = '{self.today}' \
 
@@ -543,7 +544,8 @@ class SRMS(object):
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/twitter.png",
                             'Date': str(return_value[i][8]),
-                            'Id': str(return_value[i][9])
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if str(return_value[i][7]) == "Positive":
@@ -1091,9 +1093,9 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                                 select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id from sa.RefreshedSAFinstagramsentiment where Date = CAST (GETDATE() AS DATE) union all\
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id,  isnull(3,3) as platform_id from sa.RefreshedSAFinstagramsentiment where Date = CAST (GETDATE() AS DATE) union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE)\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id,  isnull(4,4) as platform_id from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE)\
                               ) e\
                               order by Date desc"
                 # -- where Date = '{self.today}' \
@@ -1118,7 +1120,8 @@ class SRMS(object):
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/insta.png",
                             'Date': str(return_value[i][8]),
-                            'Id': str(return_value[i][9])
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if str(return_value[i][7]) == "Positive":
@@ -1376,15 +1379,15 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
-                            comments,Shares, Post_url,sentiment, Date, isnull(0,0) as Id from sa.RefreshedSAFfacebooksentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                            comments,Shares, Post_url,sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFfacebooksentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                            isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as Id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as Id, isnull(3,3) as platform_id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT , id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                             like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}'\
                             order by Date desc) as e order by Date desc"
                 # and \
@@ -1411,7 +1414,8 @@ class SRMS(object):
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
                             'Date': str(return_value[i][8]),
-                            'Id': str(return_value[i][9])
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -1615,7 +1619,7 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                             select top 200 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT , id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                             like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}'\
                             order by Date desc) as e"
 
@@ -1641,7 +1645,8 @@ class SRMS(object):
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/twitter.png",
                             'Date': str(return_value[i][8]),
-                            'Id': str(return_value[i][9])
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if str(return_value[i][7]) == "Positive":
@@ -1673,7 +1678,7 @@ class SRMS(object):
                                   'drop_down': ["Negative", "Neutral"]}]
 
                 query2 = f"select count(*) total_mentions from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                            like '%alt%' and Date between '{startdate}' and '{enddate}'"
+                                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}'"
 
                 try:
                     self.cursor.execute(query2)
@@ -1727,7 +1732,7 @@ class SRMS(object):
                     # print(f"Negative_count: {result['Negative_count']}")
 
                 query5 = f"select count(sentiment) as sentiment from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                            like '%alt%' username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and and Date between '{startdate}' and '{enddate}' and Sentiment = 'Neutral'"
+                                                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Neutral'"
 
                 # print('query 5')
                 try:
@@ -1924,9 +1929,9 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                                 select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' union all\
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
                               ) e\
                               order by Date desc"
 
@@ -1950,7 +1955,8 @@ class SRMS(object):
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/insta.png",
                             'Date': str(return_value[i][8]),
-                            'Id': str(return_value[i][9])
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if str(return_value[i][7]) == "Positive":
@@ -2064,16 +2070,16 @@ class SRMS(object):
                 post_data = []
 
                 query1 = f"select * from(\
-                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance') as username, Text as post, Likes, \
-                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date = CAST (GETDATE() AS DATE)  union all\
+                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
+                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date = CAST (GETDATE() AS DATE)  union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and Date = CAST (GETDATE() AS DATE) union all\
-                            select top 100 isnull('Instagram','Instagram') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance'), Instagram_Post as post, Likes, \
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date = CAST (GETDATE() AS DATE) union all\
+                            isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and Date = CAST (GETDATE() AS DATE) union all\
+                            select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date = CAST (GETDATE() AS DATE) union all\
+                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                             tweet_text like '%altpower%' and Date = CAST (GETDATE() AS DATE)) as e"
                 # and \
                 # Date = '{self.today}' \
@@ -2096,7 +2102,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -2127,7 +2135,7 @@ class SRMS(object):
                 else:
 
                     post_data = [{"Channel": "Twitter",
-                                  'Username': "Sterling Alternative Finance",
+                                  'Username': "AltFinanceNg",
                                   "Post": "No post about Altpower so far on all social platforms....",
                                   'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/favicon.png",
                                   'Sentiment': "Positive",
@@ -2461,16 +2469,16 @@ class SRMS(object):
                 post_data = []
 
                 query1 = f"select * from(\
-                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance') as username, Text as post, Likes, \
-                            comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date between '{startdate}' and '{enddate}'  union all\
+                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
+                            comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date between '{startdate}' and '{enddate}'  union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and date between '{startdate}' and '{enddate}' union all\
-                            select top 100 isnull('Instagram','Instagram') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance'), Instagram_Post as post, Likes, \
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date between '{startdate}' and '{enddate}' union all\
+                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and date between '{startdate}' and '{enddate}' union all\
+                            select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg')  as username, Instagram_Post as post, Likes, \
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date between '{startdate}' and '{enddate}' union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0) as Shares, Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date between '{startdate}' and '{enddate}' union all\
+                            isnull(0,0) as Shares, Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date between '{startdate}' and '{enddate}' union all\
                             select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                             tweet_text like '%altpower%' and Date between '{startdate}' and '{enddate}'\
                             ) as e order by Date desc"
                 try:
@@ -2491,7 +2499,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -2684,16 +2694,16 @@ class SRMS(object):
                 post_data = []
 
                 query1 = f"select * from(\
-                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance') as username, Text as post, Likes, \
-                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date = CAST (GETDATE() AS DATE)  union all\
+                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
+                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date = CAST (GETDATE() AS DATE)  union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and Date = CAST (GETDATE() AS DATE) union all\
-                            select top 100 isnull('Instagram','Instagram') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance'), Instagram_Post as post, Likes, \
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date = CAST (GETDATE() AS DATE) union all\
+                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and Date = CAST (GETDATE() AS DATE) union all\
+                            select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date = CAST (GETDATE() AS DATE) union all\
+                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                             tweet_text like '%altpay%' and Date = CAST (GETDATE() AS DATE)) as e"
                 # and \
                 # Date = '{self.today}' \
@@ -2716,7 +2726,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10]),
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -3072,15 +3084,15 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
-                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date between '{startdate}' and '{enddate}'  union all\
+                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date between '{startdate}' and '{enddate}'  union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and date between '{startdate}' and '{enddate}' union all\
+                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and date between '{startdate}' and '{enddate}' union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date between '{startdate}' and '{enddate}' union all\
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date between '{startdate}' and '{enddate}' union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date between '{startdate}' and '{enddate}' union all\
+                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date between '{startdate}' and '{enddate}' union all\
                             select isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                             tweet_text like '%altpay%' and Date between '{startdate}' and '{enddate}') as e order by Date desc"
                 try:
                     self.cursor.execute(query1)
@@ -3100,7 +3112,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -3901,15 +3915,15 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
-                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date = CAST (GETDATE() AS DATE)  union all\
+                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date = CAST (GETDATE() AS DATE)  union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and Date = CAST (GETDATE() AS DATE) union all\
+                            isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('Altdriveng','Altdriveng'), Instagram_Post as post, Likes, \
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from [sa].[RefreshedAltdriveInstagramSentiment] where Date = CAST (GETDATE() AS DATE) union all\
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(8,8) as platform_id from [sa].[RefreshedAltdriveInstagramSentiment] where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from [sa].[RefreshedAltdriveInstagramCommentSentiment] where Date = CAST (GETDATE() AS DATE) union all\
+                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(9,9) as platform_id from [sa].[RefreshedAltdriveInstagramCommentSentiment] where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                             like '%altdrive%' and Date = CAST (GETDATE() AS DATE)) as e"
                 # and \
                 # Date = '{self.today}' \
@@ -3932,7 +3946,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -4298,15 +4314,15 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
-                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date between '{startdate}' and '{enddate}'  union all\
+                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date between '{startdate}' and '{enddate}'  union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and date between '{startdate}' and '{enddate}' union all\
+                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and date between '{startdate}' and '{enddate}' union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('Altdriveng','Altdriveng') as username, Instagram_Post as post, Likes, \
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from [sa].[RefreshedAltdriveInstagramSentiment] where Date between '{startdate}' and '{enddate}' union all\
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(8,8) as platform_id from [sa].[RefreshedAltdriveInstagramSentiment] where Date between '{startdate}' and '{enddate}' union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltdriveInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' union all\
+                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, isnull(0,0) as Id, isnull(9,9) as platform_id from sa.RefreshedAltdriveInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' union all\
                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                             like '%altdrive%' and Date between '{startdate}' and '{enddate}'\
                             ) as e order by Date desc"
                 try:
@@ -4327,7 +4343,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -4516,15 +4534,15 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('Altmallng','Altmallng') as username, Text as post, Likes, \
-                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedAltmallFacebookSentiment where Date = CAST (GETDATE() AS DATE)  union all\
+                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedAltmallFacebookSentiment where Date = CAST (GETDATE() AS DATE)  union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedAltmallFacebookCommentSentiment where Date = CAST (GETDATE() AS DATE) union all\
+                            isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedAltmallFacebookCommentSentiment where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('Altmallng','Altmallng'), Instagram_Post as post, Likes, \
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedAltmallInstagramSentiment where Date = CAST (GETDATE() AS DATE) union all\
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedAltmallInstagramSentiment where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltmallInstagramCommentSentiment where Date = CAST (GETDATE() AS DATE) union all\
+                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedAltmallInstagramCommentSentiment where Date = CAST (GETDATE() AS DATE) union all\
                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                             like '%altmall%' and Date = CAST (GETDATE() AS DATE)) as e"
                 # and \
                 # Date = '{self.today}' \
@@ -4547,7 +4565,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -4913,15 +4933,15 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('Altmallng','Altmallng') as username, Text as post, Likes, \
-                            comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedAltmallFacebookSentiment where Date between '{startdate}' and '{enddate}'  union all\
+                            comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedAltmallFacebookSentiment where Date between '{startdate}' and '{enddate}'  union all\
                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedAltmallFacebookCommentSentiment where date between '{startdate}' and '{enddate}' union all\
+                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedAltmallFacebookCommentSentiment where date between '{startdate}' and '{enddate}' union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('Altmallng','Altmallng'), Instagram_Post as post, Likes, \
-                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedAltmallInstagramSentiment where Date between '{startdate}' and '{enddate}' union all\
+                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedAltmallInstagramSentiment where Date between '{startdate}' and '{enddate}' union all\
                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltmallInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' union all\
+                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedAltmallInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' union all\
                             select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                             tweet_text like '%altmall%' and Date between '{startdate}' and '{enddate}'\
                             ) as e order by Date desc"
                 try:
@@ -4943,7 +4963,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -5127,29 +5149,29 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                     select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, \
-                                    Text as post, Likes, comments,Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFfacebooksentiment where Date = CAST (GETDATE() AS DATE) union all\
+                                    Text as post, Likes, comments,Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFfacebooksentiment where Date = CAST (GETDATE() AS DATE) union all\
                                     select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                    isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment \
+                                    isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFfacebookcommentsentiment \
                                     where Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive' union all \
                                     select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes,\
-                                    Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFinstagramsentiment \
+                                    Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFinstagramsentiment \
                                     where Date = CAST (GETDATE() AS DATE) union all\
                                     select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, \
-                                    isnull(0,0) as comments, isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date\
+                                    isnull(0,0) as comments, isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id\
                                     from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE) and comment_sentiment = 'Positive' union all\
                                     select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
-                                    retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%' \
+                                    retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT , id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%' \
                                     and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e order by date desc"
                 else:
                     query1 = f"select * from(\
                                     select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                    isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment \
+                                    isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFfacebookcommentsentiment \
                                     where Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}' union all \
                                     select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, \
-                                    isnull(0,0) as comments, isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date\
+                                    isnull(0,0) as comments, isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id\
                                     from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE) and comment_sentiment = '{sentiment}' union all\
                                     select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) comments, \
-                                    retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
+                                    retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT , id_str) as id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%alt%'\
                                     and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}') as e order by date desc"
                 try:
                     self.cursor.execute(query1)
@@ -5169,7 +5191,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -5901,15 +5925,15 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Instagram_Post as post, Likes, \
-                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFinstagramsentiment where Date = CAST (GETDATE() AS DATE) union all\
+                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id,  isnull(3,3) as platform_id from sa.RefreshedSAFinstagramsentiment where Date = CAST (GETDATE() AS DATE) union all\
                                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE)\
+                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id,  isnull(4,4) as platform_id from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE)\
                                           ) e\
                                           order by Date desc"
                 else:
                     query1 = f"select * from(\
                                 select top 200 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE)\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFinstagramcommentsentiment where Date = CAST (GETDATE() AS DATE)\
                               and comment_sentiment = '{sentiment}') e\
                               order by Date desc"
 
@@ -5934,7 +5958,9 @@ class SRMS(object):
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/insta.png",
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if str(return_value[i][7]) == "Positive":
@@ -6215,7 +6241,7 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                                         select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                        retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                        retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                                         like '%alt%' and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}') as e order by date desc"
 
                 try:
@@ -6238,7 +6264,9 @@ class SRMS(object):
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/twitter.png",
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if str(return_value[i][7]) == "Positive":
@@ -6532,25 +6560,25 @@ class SRMS(object):
                 if sentiment == 'Positive':
 
                     query1 = f"select * from(\
-                                select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance') as username, Text as post, Likes, \
-                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date = CAST (GETDATE() AS DATE)  union all\
+                                select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
+                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date = CAST (GETDATE() AS DATE)  union all\
                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive' union all\
-                                select top 100 isnull('Instagram','Instagram') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance'), Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date = CAST (GETDATE() AS DATE) union all\
+                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive' union all\
+                                select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date = CAST (GETDATE() AS DATE) union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = 'Positive' union all\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = 'Positive' union all\
                                 select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                 tweet_text like '%altpower%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e"
                 else:
                     query1 = f"select * from(\
                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}' union all\
+                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}' union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = '{sentiment}' union all\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = '{sentiment}' union all\
                                 select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                 tweet_text like '%altpower%' and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}') as e"
 
                 try:
@@ -6572,7 +6600,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -6962,22 +6992,22 @@ class SRMS(object):
                 if platform == 'Facebook':
 
                     query1 = f"select * from(\
-                                select top 200 isnull('Facebook','Facebook') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance') as username, Text as post, Likes, \
-                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date = CAST (GETDATE() AS DATE)  union all\
+                                select top 200 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
+                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date = CAST (GETDATE() AS DATE)  union all\
                                 select top 200 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive'\
+                                isnull(0,0) as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive'\
                                 ) as e"
                 elif platform == 'Instagram':
                     query1 = f"select * from(\
-                                select top 200 isnull('Instagram','Instagram') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance') as username, Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date = CAST (GETDATE() AS DATE) union all\
+                                select top 200 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Instagram_Post as post, Likes, \
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date = CAST (GETDATE() AS DATE) union all\
                                 select top 200 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date = CAST (GETDATE() AS DATE)\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date = CAST (GETDATE() AS DATE)\
                                 ) as e"
                 else:
                     query1 = f"select * from(\
                                     select top 400 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                    comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                    comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                     tweet_text like '%altpower%' and Date = CAST (GETDATE() AS DATE)) as e"
 
                 try:
@@ -6999,7 +7029,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -9041,24 +9073,24 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                 select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
-                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date = CAST (GETDATE() AS DATE)  union all\
+                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date = CAST (GETDATE() AS DATE)  union all\
                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive' union all\
+                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive' union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc'), Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedAltdriveInstagramSentiment where Instagram_Post like '%altdrive%' and Date = CAST (GETDATE() AS DATE) union all\
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(8,8) as platform_id from sa.RefreshedAltdriveInstagramSentiment where Instagram_Post like '%altdrive%' and Date = CAST (GETDATE() AS DATE) union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltdriveInstagramCommentSentiment where user_comment like '%altdrive%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = 'Positive' union all\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(9,9) as platform_id from sa.RefreshedAltdriveInstagramCommentSentiment where user_comment like '%altdrive%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = 'Positive' union all\
                                 select top 100 isnull('Twitter','Twitter') as Channel, user_name as username, text as post, tweet_likes as Likes, isnull(0,0) comments,\
-                                retweet_count as Shares, Post_url,sentiment, Date from sa.Refreshedtwitterbanksentiment where text \
+                                retweet_count as Shares, Post_url,sentiment, Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.Refreshedtwitterbanksentiment where text \
                                 like '%onepay%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e"
                 else:
                     query1 = f"select * from(\
                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
                                 isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}' union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltdriveInstagramCommentSentiment where user_comment like '%altdrive%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = '{sentiment}' union all\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(9,9) as platform_id from sa.RefreshedAltdriveInstagramCommentSentiment where user_comment like '%altdrive%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = '{sentiment}' union all\
                                 select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                                 like '%altdrive%' and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}') as e"
 
                 query1 = f"select * from(\
@@ -9483,19 +9515,19 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                 select top 200 isnull('Facebook','Facebook') as Channel, isnull('Altdriveng','Altdriveng') as username, Text as post, Likes, \
-                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date = CAST (GETDATE() AS DATE)  union all\
+                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date = CAST (GETDATE() AS DATE)  union all\
                                 select top 200 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive'\
+                                isnull(0,0) as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive'\
                                 ) as e"
                 elif platform == 'Instagram':
                     query1 = f"select top 200 isnull('Instagram','Instagram') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc'), Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedAltdriveInstagramSentiment where Instagram_Post like '%altdrive%' and Date = CAST (GETDATE() AS DATE) union all\
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(8,8) as platform_id from sa.RefreshedAltdriveInstagramSentiment where Instagram_Post like '%altdrive%' and Date = CAST (GETDATE() AS DATE) union all\
                                 select top 200 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltdriveInstagramCommentSentiment where user_comment like '%altmall%' and Date = CAST (GETDATE() AS DATE)"
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(9,9) as platform_id from sa.RefreshedAltdriveInstagramCommentSentiment where user_comment like '%altmall%' and Date = CAST (GETDATE() AS DATE)"
                 else:
                     query1 = f"select * from(\
                                     select top 400 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                    retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                    retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                                     like '%altdrive%' and Date = CAST (GETDATE() AS DATE)) as e"
 
                 try:
@@ -9517,7 +9549,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -9890,25 +9924,25 @@ class SRMS(object):
                 if sentiment == 'Positive':
 
                     query1 = f"select * from(\
-                                select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance') as username, Text as post, Likes, \
-                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date = CAST (GETDATE() AS DATE)  union all\
+                                select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
+                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date = CAST (GETDATE() AS DATE)  union all\
                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive' union all\
-                                select top 100 isnull('Instagram','Instagram') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc'), Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date = CAST (GETDATE() AS DATE) union all\
+                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive' union all\
+                                select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Instagram_Post as post, Likes, \
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date = CAST (GETDATE() AS DATE) union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = 'Positive' union all\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = 'Positive' union all\
                                 select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                 tweet_text like '%altpay%' and Date = CAST (GETDATE() AS DATE) and sentiment = 'Positive') as e"
                 else:
                     query1 = f"select * from(\
                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}' union all\
+                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}' union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = '{sentiment}' union all\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date = CAST (GETDATE() AS DATE) and comment_sentiment = '{sentiment}' union all\
                                 select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                 tweet_text like '%altpay%' and Date = CAST (GETDATE() AS DATE) and sentiment = '{sentiment}') as e"
 
                 try:
@@ -9929,7 +9963,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -10286,21 +10322,21 @@ class SRMS(object):
                 if platform == 'Facebook':
 
                     query1 = f"select * from(\
-                                select top 200 isnull('Facebook','Facebook') as Channel, isnull('Sterling Bank Plc','Sterling Bank Plc') as username, Text as post, Likes, \
-                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date = CAST (GETDATE() AS DATE)  union all\
+                                select top 200 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
+                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date = CAST (GETDATE() AS DATE)  union all\
                                 select top 200 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and Date = CAST (GETDATE() AS DATE)) as e"
+                                isnull(0,0) as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and Date = CAST (GETDATE() AS DATE)) as e"
                 elif platform == 'Instagram':
 
-                    query1 = f"select top 200 isnull('Instagram','Instagram') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance'), Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date = CAST (GETDATE() AS DATE) union all\
+                    query1 = f"select top 200 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date = CAST (GETDATE() AS DATE) union all\
                                 select top 200 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date = CAST (GETDATE() AS DATE)"
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date = CAST (GETDATE() AS DATE)"
                 else:
 
                     query1 = f"select * from(\
                                     select top 400 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                    comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%altpay%' and Date = CAST (GETDATE() AS DATE)) as e"
+                                    comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text like '%altpay%' and Date = CAST (GETDATE() AS DATE)) as e"
 
                 try:
                     self.cursor.execute(query1)
@@ -10320,7 +10356,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -10686,26 +10724,26 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                                 select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
-                                                comments,Shares, Post_url,sentiment, Date, isnull(0,0) as Id from sa.RefreshedSAFfacebooksentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                                                comments,Shares, Post_url,sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFfacebooksentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive' order by Date desc union all\
+                                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive' order by Date desc union all\
                                                 select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
-                                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as Id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
+                                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as Id, isnull(3,3) as platform_id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' order by Date desc union all\
                                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' order by Date desc union all\
+                                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' order by Date desc union all\
                                                 select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                like '%alt%' and Date between '{startdate}' and '{enddate}' and sentiment = 'Positive'\
+                                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT , id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                                like '%alt%'and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and sentiment = 'Positive'\
                                                 order by Date desc) as e order by Date desc"
                 else:
                     query1 = f"select * from(\
                                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' order by Date desc union all\
+                                                isnull(0,0)as Shares, source_url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFfacebookcommentsentiment where Date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' order by Date desc union all\
                                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' order by Date desc union all\
+                                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' order by Date desc union all\
                                                 select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                like '%alt%' and Date between '{startdate}' and '{enddate}' and sentiment = '{sentiment}'\
+                                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT , id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                                like '%alt%'and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and sentiment = '{sentiment}'\
                                                 order by Date desc) as e order by Date desc"
                     # and \
                 # Date = '{self.today}' \
@@ -10731,7 +10769,8 @@ class SRMS(object):
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
                             'Date': str(return_value[i][8]),
-                            'Id': str(return_value[i][9])
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -10789,7 +10828,7 @@ class SRMS(object):
                                                                 isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' union all\
                                                                 select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                                                 retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                                like '%alt%' and Date between '{startdate}' and '{enddate}') as e"
+                                                                like '%alt%'and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}') as e"
                 try:
                     self.cursor.execute(query2)
                     return_value = self.cursor.fetchall()
@@ -10814,7 +10853,7 @@ class SRMS(object):
                                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' union all\
                                             select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive') as e union all\
+                                            like '%alt%'and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive') as e union all\
                                             select count(Instagram_Post) as sentiment from sa.RefreshedSAFinstagramsentiment) f"
 
                 # print('query 3')
@@ -10842,7 +10881,7 @@ class SRMS(object):
                                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Negative' union all\
                                             select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Negative') as e"
+                                            like '%alt%'and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Negative') as e"
 
                 # print('query 4')
                 try:
@@ -10869,7 +10908,7 @@ class SRMS(object):
                                             isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Neutral' union all\
                                             select isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
                                             retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Neutral') as e"
+                                            like '%alt%'and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Neutral') as e"
 
                 # print('query 5')
                 try:
@@ -10887,7 +10926,7 @@ class SRMS(object):
 
                 # print(f"done with query 5")
 
-                query6 = f"select Hashtags from sa.RefreshedSAFtwitterbanksentiment2 where Date between '{startdate}' and '{enddate}' and tweet_text like '%alt%' and Hashtags != 'None'"
+                query6 = f"select Hashtags from sa.RefreshedSAFtwitterbanksentiment2 where Date between '{startdate}' and '{enddate}' and tweet_text like '%alt%'and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Hashtags != 'None'"
 
                 try:
                     self.cursor.execute(query6)
@@ -10942,8 +10981,8 @@ class SRMS(object):
 
                 query1 = f"select * from(\
                                             select top 200 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and sentiment = '{sentiment}'\
+                                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, id_str as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and sentiment = '{sentiment}'\
                                             order by Date desc) as e"
 
                 # print(f"query1: {query1}")
@@ -10968,7 +11007,8 @@ class SRMS(object):
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/twitter.png",
                             'Date': str(return_value[i][8]),
-                            'Id': str(return_value[i][9])
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if str(return_value[i][7]) == "Positive":
@@ -10995,10 +11035,6 @@ class SRMS(object):
                                   "Post": f"No post with {sentiment} sentiment between {startdate}  and {enddate} directed at AltfinanceNg on Twitter....",
                                   'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/favicon.png",
                                   'Sentiment': f"{sentiment}"}]
-                    # 'drop_down_emojie': ["https://azermstorage.blob.core.windows.net/appimages/neg.jpg",
-                    #                      "https://azermstorage.blob.core.windows.net/appimages/neut.jpg"],
-                    # 'Sentiment_emojie': "https://azermstorage.blob.core.windows.net/appimages/pos.jpg",
-                    # 'drop_down': ["Negative", "Neutral"]}]
 
                     if sentiment == "Positive":
                         post_data[0]["drop_down"] = ["Negative", "Neutral"]
@@ -11023,7 +11059,7 @@ class SRMS(object):
                             "https://azermstorage.blob.core.windows.net/appimages/neg.jpg"]
 
                 query2 = f"select count(*) total_mentions from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                            like '%alt%' and Date between '{startdate}' and '{enddate}'"
+                                                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}'"
 
                 try:
                     self.cursor.execute(query2)
@@ -11039,7 +11075,7 @@ class SRMS(object):
                     result['total_mentions'] = 0
 
                 query3 = f"select count(sentiment) as sentiment from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive'"
+                                                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Positive'"
 
                 # print('query 3')
                 try:
@@ -11058,7 +11094,7 @@ class SRMS(object):
                     # print(f"Positve_count: {result['Positve_count']}")
 
                 query4 = f"select count(sentiment) as sentiment from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Negative'"
+                                                                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Negative'"
 
                 # print('query 4')
                 try:
@@ -11077,7 +11113,7 @@ class SRMS(object):
                     # print(f"Negative_count: {result['Negative_count']}")
 
                 query5 = f"select count(sentiment) as sentiment from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
-                                                                            like '%alt%' and Date between '{startdate}' and '{enddate}' and Sentiment = 'Neutral'"
+                                                                            like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Date between '{startdate}' and '{enddate}' and Sentiment = 'Neutral'"
 
                 # print('query 5')
                 try:
@@ -11093,7 +11129,7 @@ class SRMS(object):
                 else:
                     result['Neutral_count'] = 0
 
-                query6 = f"select Hashtags from sa.RefreshedSAFtwitterbanksentiment2 where Date between '{startdate}' and '{enddate}' and tweet_text like '%alt%' and Hashtags != 'None'"
+                query6 = f"select Hashtags from sa.RefreshedSAFtwitterbanksentiment2 where Date between '{startdate}' and '{enddate}' and tweet_text like '%alt%' and username not in ('jaizbankplc', 'JaizBankNG', 'Tajbankltd') and Hashtags != 'None'"
                 try:
                     self.cursor.execute(query6)
                 except Exception as e:
@@ -11283,15 +11319,15 @@ class SRMS(object):
                 if sentiment == 'Positive':
                     query1 = f"select * from(\
                                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Instagram_Post as post, Likes, \
-                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' union all\
+                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id,  isnull(3,3) as platform_id from sa.RefreshedSAFinstagramsentiment where Date between '{startdate}' and '{enddate}' union all\
                                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
+                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
                                           and comment_sentiment = 'Positive') e\
                                           order by Date desc"
                 else:
                     query1 = f"select * from(\
                                             select top 200 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
+                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFinstagramcommentsentiment where Date between '{startdate}' and '{enddate}'\
                                           and comment_sentiment = '{sentiment}') e\
                                           order by Date desc"
 
@@ -11315,7 +11351,8 @@ class SRMS(object):
                             'Sentiment': str(return_value[i][7]),
                             'Channel_logo': "https://azermstorage.blob.core.windows.net/appimages/insta.png",
                             'Date': str(return_value[i][8]),
-                            'Id': str(return_value[i][9])
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if str(return_value[i][7]) == "Positive":
@@ -11453,26 +11490,26 @@ class SRMS(object):
                 if sentiment == 'Positive':
 
                     query1 = f"select * from(\
-                                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance') as username, Text as post, Likes, \
-                                            comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date between '{startdate}' and '{enddate}'  union all\
+                                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
+                                            comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date between '{startdate}' and '{enddate}'  union all\
                                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and date between '{startdate}' and '{enddate}' and Sentiment = 'Positive' union all\
-                                            select top 100 isnull('Instagram','Instagram') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance'), Instagram_Post as post, Likes, \
-                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date between '{startdate}' and '{enddate}' union all\
+                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and date between '{startdate}' and '{enddate}' and Sentiment = 'Positive' union all\
+                                            select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Instagram_Post as post, Likes, \
+                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date between '{startdate}' and '{enddate}' union all\
                                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0) as Shares, Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' union all\
+                                            isnull(0,0) as Shares, Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' union all\
                                             select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                             tweet_text like '%altpower%' and Date between '{startdate}' and '{enddate}' and sentiment = 'Positive'\
                                             ) as e order by Date desc"
                 else:
                     query1 = f"select * from(\
                                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' union all\
+                                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' union all\
                                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0) as Shares, Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' union all\
+                                                isnull(0,0) as Shares, Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' union all\
                                                 select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                                 tweet_text like '%altpower%' and Date between '{startdate}' and '{enddate}' and sentiment = '{sentiment}'\
                                                 ) as e order by Date desc"
 
@@ -11494,7 +11531,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -11710,21 +11749,21 @@ class SRMS(object):
 
                 if platform == 'Facebook':
                     query1 = f"select * from(\
-                                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance') as username, Text as post, Likes, \
-                                            comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date between '{startdate}' and '{enddate}'  union all\
+                                            select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
+                                            comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpower%' and Date between '{startdate}' and '{enddate}'  union all\
                                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and date between '{startdate}' and '{enddate}'\
+                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpower%' and date between '{startdate}' and '{enddate}'\
                                             )as e order by Date desc"
                 elif platform == 'Instagram':
-                    query1 = f"select top 100 isnull('Instagram','Instagram') as Channel, isnull('Sterling Alternative Finance','Sterling Alternative Finance'), Instagram_Post as post, Likes, \
-                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date between '{startdate}' and '{enddate}' union all\
+                    query1 = f"select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Instagram_Post as post, Likes, \
+                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpower%' and Date between '{startdate}' and '{enddate}' union all\
                                             select isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date between '{startdate}' and '{enddate}'\
+                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpower%' and Date between '{startdate}' and '{enddate}'\
                                             order by Date desc"
                 else:
                     query1 = f"select * from(\
                                             select top 400 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                             tweet_text like '%altpower%' and Date between '{startdate}' and '{enddate}'\
                                 ) as e order by Date desc"
 
@@ -11746,7 +11785,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -12416,25 +12457,25 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('Altmallng','Altmallng') as username, Text as post, Likes, \
-                                            comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedAltmallFacebookSentiment where Date between '{startdate}' and '{enddate}'  union all\
+                                            comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedAltmallFacebookSentiment where Date between '{startdate}' and '{enddate}'  union all\
                                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedAltmallFacebookCommentSentiment where date between '{startdate}' and '{enddate}' and Sentiment = 'Positive' union all\
+                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedAltmallFacebookCommentSentiment where date between '{startdate}' and '{enddate}' and Sentiment = 'Positive' union all\
                                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('Altmallng','Altmallng'), Instagram_Post as post, Likes, \
-                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedAltmallInstagramSentiment where Date between '{startdate}' and '{enddate}' union all\
+                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedAltmallInstagramSentiment where Date between '{startdate}' and '{enddate}' union all\
                                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltmallInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' union all\
+                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedAltmallInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' union all\
                                             select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                             tweet_text like '%altmall%' and Date between '{startdate}' and '{enddate}' and sentiment = 'Positive'\
                                             ) as e order by Date desc"
                 else:
                     query1 = f"select * from(\
                                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedAltmallFacebookCommentSentiment where date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' union all\
+                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedAltmallFacebookCommentSentiment where date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' union all\
                                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltmallInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' union all\
+                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedAltmallInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' union all\
                                             select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                            comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                             tweet_text like '%altmall%' and Date between '{startdate}' and '{enddate}' and sentiment = '{sentiment}'\
                                             ) as e order by Date desc"
 
@@ -12457,7 +12498,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -12663,22 +12706,22 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                 select top 100 isnull('Facebook','Facebook') as Channel, isnull('Altmallng','Altmallng') as username, Text as post, Likes, \
-                                comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedAltmallFacebookSentiment where Date between '{startdate}' and '{enddate}'  union all\
+                                comments,Shares, Post_url,isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedAltmallFacebookSentiment where Date between '{startdate}' and '{enddate}'  union all\
                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedAltmallFacebookCommentSentiment where date between '{startdate}' and '{enddate}'\
+                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedAltmallFacebookCommentSentiment where date between '{startdate}' and '{enddate}'\
                                 ) as e order by Date desc"
                 elif platform == 'Instagram':
 
                     query1 = f"select top 100 isnull('Instagram','Instagram') as Channel, isnull('Altmallng','Altmallng'), Instagram_Post as post, Likes, \
-                                    Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedAltmallInstagramSentiment where Date between '{startdate}' and '{enddate}' union all\
+                                    Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedAltmallInstagramSentiment where Date between '{startdate}' and '{enddate}' union all\
                                     select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                    isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltmallInstagramCommentSentiment where Date between '{startdate}' and '{enddate}'\
+                                    isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedAltmallInstagramCommentSentiment where Date between '{startdate}' and '{enddate}'\
                                      order by Date desc"
 
                 else:
                     query1 = f"select * from(\
                                         select top 200 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                        comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                        comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                         tweet_text like '%altmall%' and Date between '{startdate}' and '{enddate}'\
                                             ) as e order by Date desc"
 
@@ -12701,7 +12744,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -12894,25 +12939,25 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltdriveNg','AltdriveNg') as username, Text as post, Likes, \
-                                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date between '{startdate}' and '{enddate}'  union all\
+                                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date between '{startdate}' and '{enddate}'  union all\
                                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' union all\
+                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' union all\
                                             select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltdriveNg','AltdriveNg') as username, Instagram_Post as post, Likes, \
-                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from [sa].[RefreshedAltdriveInstagramSentiment] where Date between '{startdate}' and '{enddate}' union all\
+                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(8,8) as platform_id from [sa].[RefreshedAltdriveInstagramSentiment] where Date between '{startdate}' and '{enddate}' union all\
                                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltdriveInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' union all\
+                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedAltdriveInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' union all\
                                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                                             like '%altdrive%' and Date between '{startdate}' and '{enddate}' and sentiment = '{sentiment}'\
                                             ) as e order by Date desc"
                 else:
                     query1 = f"select * from(\
                                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' union all\
+                                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' union all\
                                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltdriveInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' union all\
+                                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(9,9) as platform_id from sa.RefreshedAltdriveInstagramCommentSentiment where Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' union all\
                                                 select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                                retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                                                 like '%altdrive%' and Date between '{startdate}' and '{enddate}' and sentiment = '{sentiment}'\
                                                 ) as e order by Date desc"
 
@@ -12934,7 +12979,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -13147,22 +13194,21 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                             select top 100 isnull('Facebook','Facebook') as Channel, isnull('Altdriveng','Altdriveng') as username, Text as post, Likes, \
-                                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date between '{startdate}' and '{enddate}'  union all\
+                                            comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFfacebooksentiment where Text like '%altdrive%' and Date between '{startdate}' and '{enddate}'  union all\
                                             select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and date between '{startdate}' and '{enddate}'\
+                                            isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date, isnull(0,0) as Id, isnull(2,2) as platform_id as Date from sa.RefreshedSAFfacebookcommentsentiment where text like '%altdrive%' and date between '{startdate}' and '{enddate}'\
                                             ) as e order by Date desc"
 
                 elif platform == 'Instagram':
-                    query1 = f"select * from(\
-                                            select top 100 isnull('Instagram','Instagram') as Channel, isnull('Altdriveng','Altdriveng') as username, Instagram_Post as post, Likes, \
-                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from [sa].[RefreshedAltdriveInstagramSentiment] where Date between '{startdate}' and '{enddate}' union all\
+                    query1 = f"select top 100 isnull('Instagram','Instagram') as Channel, isnull('Altdriveng','Altdriveng') as username, Instagram_Post as post, Likes, \
+                                            Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(8,8) from [sa].[RefreshedAltdriveInstagramSentiment] where Date between '{startdate}' and '{enddate}' union all\
                                             select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedAltdriveInstagramCommentSentiment where Date between '{startdate}' and '{enddate}'\
-                                            ) as e order by Date desc"
+                                            isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(9,9) as platform_id from sa.RefreshedAltdriveInstagramCommentSentiment where Date between '{startdate}' and '{enddate}'\
+                                            order by Date desc"
                 else:
                     query1 = f"select * from(\
                                             select top 100 isnull('Twitter','Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0,0) comments,\
-                                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
+                                            retweet_count as Shares, Post_url,sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where tweet_text \
                                             like '%altdrive%' and Date between '{startdate}' and '{enddate}'\
                                         ) as e order by Date desc"
 
@@ -13184,7 +13230,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10]),
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -13384,24 +13432,24 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                 select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
-                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date between '{startdate}' and '{enddate}'  union all\
+                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date between '{startdate}' and '{enddate}'  union all\
                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and date between '{startdate}' and '{enddate}' and Sentiment = 'Positive' union all\
+                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and date between '{startdate}' and '{enddate}' and Sentiment = 'Positive' union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date between '{startdate}' and '{enddate}' union all\
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date between '{startdate}' and '{enddate}' union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' union all\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive' union all\
                                 select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                 tweet_text like '%altpay%' and sentiment = 'Positive' and Date between '{startdate}' and '{enddate}') as e order by Date desc"
                 else:
                     query1 = f"select * from(\
                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' union all\
+                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and date between '{startdate}' and '{enddate}' and Sentiment = '{sentiment}' union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' union all\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date between '{startdate}' and '{enddate}' and comment_sentiment = '{sentiment}' union all\
                                 select top 100 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                 tweet_text like '%altpay%' and sentiment = '{sentiment}' and Date between '{startdate}' and '{enddate}') as e order by Date desc"
 
                 try:
@@ -13422,7 +13470,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':
@@ -13632,22 +13682,22 @@ class SRMS(object):
 
                     query1 = f"select * from(\
                                 select top 100 isnull('Facebook','Facebook') as Channel, isnull('AltFinanceNg','AltFinanceNg') as username, Text as post, Likes, \
-                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date between '{startdate}' and '{enddate}'  union all\
+                                comments,Shares, Post_url, isnull('Positive', 'Positive') as sentiment, Date, isnull(0,0) as Id, isnull(1,1) as platform_id from sa.RefreshedSAFFacebookSentiment where Text like '%altpay%' and Date between '{startdate}' and '{enddate}'  union all\
                                 select top 100 isnull('Facebook','Facebook') as Channel, source as username, text as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and date between '{startdate}' and '{enddate}' and Sentiment = 'Positive' union all\
+                                isnull(0,0)as Shares, url as Post_url,Sentiment as sentiment, date as Date, isnull(0,0) as Id, isnull(2,2) as platform_id from sa.RefreshedSAFFacebookCommentSentiment where text like '%altpay%' and date between '{startdate}' and '{enddate}' and Sentiment = 'Positive'\
                                 ) as e order by Date desc"
 
                 elif platform == 'Instagram':
                     query1 = f"select top 100 isnull('Instagram','Instagram') as Channel, isnull('AltFinanceNg','AltFinanceNg'), Instagram_Post as post, Likes, \
-                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date between '{startdate}' and '{enddate}' union all\
+                                Comments, isnull(0,0) as Shares, Post_url,isnull('Positive', 'Positive') as Sentiment, Date, convert(BIGINT , post_id) as id, isnull(3,3) as platform_id from sa.RefreshedSAFInstagramSentiment where Instagram_Post like '%altpay%' and Date between '{startdate}' and '{enddate}' union all\
                                 select top 100 isnull('Instagram','Instagram') as Channel, user_name as username, user_comment as post, isnull(0,0) as Likes, isnull(0,0) as comments,\
-                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive'\
+                                isnull(0,0) as Shares, post_url as Post_url,comment_sentiment as Sentiment, Date, Id, isnull(4,4) as platform_id from sa.RefreshedSAFInstagramCommentSentiment where user_comment like '%altpay%' and Date between '{startdate}' and '{enddate}' and comment_sentiment = 'Positive'\
                                 order by Date desc"
 
                 else:
                     query1 = f"select * from(\
                                     select top 200 isnull('Twitter', 'Twitter') as Channel, username as username, tweet_text as post, favorited_count as Likes, isnull(0, 0) \
-                                    comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date from sa.RefreshedSAFtwitterbanksentiment2 where \
+                                    comments, retweet_count as Shares, Post_url, sentiment, Post_Time as Date, convert(BIGINT, id_str) as Id, isnull(5,5) as platform_id from sa.RefreshedSAFtwitterbanksentiment2 where \
                                     tweet_text like '%altpay%' and sentiment = 'Positive' and Date between '{startdate}' and '{enddate}') as e order by Date desc"
 
                 try:
@@ -13668,7 +13718,9 @@ class SRMS(object):
                             'Shares': str(return_value[i][5]),
                             'Post_url': str(return_value[i][6]),
                             'Sentiment': str(return_value[i][7]),
-                            'Date': str(return_value[i][8])
+                            'Date': str(return_value[i][8]),
+                            'Id': str(return_value[i][9]),
+                            'Platform_Id': str(return_value[i][10])
                         }
 
                         if data['Channel'] == 'Twitter':

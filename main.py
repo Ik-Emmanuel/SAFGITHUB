@@ -1,5 +1,4 @@
 from application import app
-# added twitter an IG trend analysis dashboard
-# fix sentiment change loader
+# added id and platform id to all methods in route_logic
 if __name__ == "__main__":
     app.run(debug=True)

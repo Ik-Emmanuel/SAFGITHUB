@@ -300,6 +300,8 @@ overflow: auto;
              </div>
              <input id="channel-{{result['Id']}}" style="width: 0%; visibility: hidden;" value="{{result['Channel']}}">
              <input id="ID-{{result['Id']}}" style="width: 0%; visibility: hidden;" value="{{result['Id']}}">
+             <input id="platform-{{result['Id']}}" style="width: 0%; visibility: hidden;" value="{{result['Platform_Id']}}">
+
 
               
               <img  style="height: 30px; width: 50px; padding-left: 1em; " src="https://azermstorage.blob.core.windows.net/appimages/like.png" alt="logo" class="logo"> 
@@ -321,11 +323,14 @@ overflow: auto;
                     channel_find = document.getElementById('channel-{{result['Id']}}');
                     ID_find = document.getElementById('ID-{{result['Id']}}');
                     image =  document.getElementById('img-{{result['Id']}}');
+                    platform_find = document.getElementById('platform-{{result['Id']}}');
                     channel = channel_find.value;
                     post_id = ID_find.value;
+                    platform = platform_find.value;
+
                     document.getElementById('loader-{{result['Id']}}').style.display='block';
         
-                    fetch('/sentchange/' + sentiment + '$' + channel + '$' + post_id).then(function(response) {
+                    fetch('/api/sentiment-change/' + sentiment + '$' + channel + '$' + post_id + '$' + platform).then(function(response) {
         
                         response.json().then(function(data){
         
