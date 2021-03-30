@@ -10,104 +10,6 @@ global SRMS
 SRMS = SRMS()
 
 
-############################################################### sentiment change #########################################################################
-@app.route('/api/sentiment-change/<value>')
-def sent(value):
-    try:
-
-        if value:
-            message = None
-            sentiment = None
-            table = None
-            result = None
-            sentiment_column = None
-            id_column = None
-
-            sentiment = value.split("$")[0].strip()
-            platform = value.split("$")[1]
-            id = value.split("$")[2]
-            platform_id = int(value.split("$")[3])
-
-            if platform_id == 1:
-                table = ""
-                id_column = ""
-                sentiment_column = ""
-
-            if platform_id == 2:
-                table = ""
-                id_column = ""
-                sentiment_column = ""
-
-            if platform_id == 3:
-                table = "sa.refreshedsafinstagramsentiment"
-                id_column = "post_id"
-
-            if platform_id == 4:
-                table = "sa.RefreshedSAFinstagramcommentsentiment"
-                id_column = "id"
-                sentiment_column = "comment_sentiment"
-
-            if platform_id == 5:
-                table = "[sa].[RefreshedSAFtwitterbanksentiment2]"
-                id_column = "id_str"
-                sentiment_column = "sentiment"
-
-            if platform_id == 6:
-                table = "sa.RefreshedAltmallInstagramSentiment"
-                id_column = "post_id"
-                sentiment_column = ""
-
-            if platform_id == 7:
-                table = "sa.RefreshedAltmallInstagramCommentSentiment"
-                id_column = "id"
-                sentiment_column = "comment_sentiment"
-
-            if platform_id == 8:
-                table = "[sa].[RefreshedAltdriveInstagramSentiment]"
-                id_column = "post_id"
-
-            if platform_id == 9:
-                table = "[sa].[RefreshedAltdriveInstagramCommentSentiment]"
-                id_column = "id"
-                sentiment_column = "comment_sentiment"
-
-            if sentiment == "Positive":
-                sentiment_emojie = "https://azermstorage.blob.core.windows.net/appimages/pos.png"
-            elif sentiment == "Neutral":
-                sentiment_emojie = "https://azermstorage.blob.core.windows.net/appimages/neut.png"
-
-            else:
-                sentiment_emojie = "https://azermstorage.blob.core.windows.net/appimages/neg.png"
-
-            try:
-                if platform_id in [3, 6, 8]:
-                    message = f"Sentiment changed to {sentiment}"
-                else:
-                    db.session.execute(f"update {table} set {sentiment_column} = '{sentiment}' where {id_column} = '{id}'")
-                    db.session.commit()
-
-                    message = f"Sentiment changed to {sentiment}"
-
-                result = {'message': message, 'link': sentiment_emojie}
-
-            except Exception as e:
-                message = "Sentiment change failed, please try again."
-                print(str(e))
-
-                result = {'error': message}
-
-        else:
-            result = {'error': 'Sentiment change failed, please try again.'}
-
-    except Exception as e:
-        print(str(e))
-
-        result = {'error': 'Sentiment change failed, please try again.'}
-
-    return jsonify(result)
-
-
-#########################################################################################################################################################
 @app.route('/')
 def login():
     if 'email' in session:
@@ -2349,3 +2251,100 @@ def altpaydatechannel():
         flash("Oops something went wrong, Please try again...", "danger")
 
         return render_template('altpaydate.html', user=session['email'], data=None)
+
+
+@app.route('/api/sentiment-change/<value>')
+def sent(value):
+    try:
+
+        if value:
+            message = None
+            sentiment = None
+            table = None
+            result = None
+            sentiment_column = None
+            id_column = None
+
+            sentiment = value.split("$")[0].strip()
+            platform = value.split("$")[1]
+            id = value.split("$")[2]
+            platform_id = int(value.split("$")[3])
+
+            if platform_id == 1:
+                table = ""
+                id_column = ""
+                sentiment_column = ""
+
+            if platform_id == 2:
+                table = ""
+                id_column = ""
+                sentiment_column = ""
+
+            if platform_id == 3:
+                table = "sa.refreshedsafinstagramsentiment"
+                id_column = "post_id"
+
+            if platform_id == 4:
+                table = "sa.RefreshedSAFinstagramcommentsentiment"
+                id_column = "id"
+                sentiment_column = "comment_sentiment"
+
+            if platform_id == 5:
+                table = "[sa].[RefreshedSAFtwitterbanksentiment2]"
+                id_column = "id_str"
+                sentiment_column = "sentiment"
+
+            if platform_id == 6:
+                table = "sa.RefreshedAltmallInstagramSentiment"
+                id_column = "post_id"
+                sentiment_column = ""
+
+            if platform_id == 7:
+                table = "sa.RefreshedAltmallInstagramCommentSentiment"
+                id_column = "id"
+                sentiment_column = "comment_sentiment"
+
+            if platform_id == 8:
+                table = "[sa].[RefreshedAltdriveInstagramSentiment]"
+                id_column = "post_id"
+
+            if platform_id == 9:
+                table = "[sa].[RefreshedAltdriveInstagramCommentSentiment]"
+                id_column = "id"
+                sentiment_column = "comment_sentiment"
+
+            if sentiment == "Positive":
+                sentiment_emojie = "https://azermstorage.blob.core.windows.net/appimages/pos.png"
+            elif sentiment == "Neutral":
+                sentiment_emojie = "https://azermstorage.blob.core.windows.net/appimages/neut.png"
+
+            else:
+                sentiment_emojie = "https://azermstorage.blob.core.windows.net/appimages/neg.png"
+
+            try:
+                if platform_id in [3, 6, 8]:
+                    message = f"Sentiment changed to {sentiment}"
+                else:
+                    # print(f"update {table} set {sentiment_column} = '{sentiment}' where {id_column} = '{id}'")
+                    db.session.execute(f"update {table} set {sentiment_column} = '{sentiment}' where {id_column} = '{id}'")
+                    db.session.commit()
+
+                    message = f"Sentiment changed to {sentiment}"
+
+                result = {'message': message, 'link': sentiment_emojie}
+
+            except Exception as e:
+                message = "Sentiment change failed, please try again."
+                print(str(e))
+
+                result = {'error': message}
+
+        else:
+            result = {'error': 'Sentiment change failed, please try again.'}
+
+    except Exception as e:
+        print(str(e))
+
+        result = {'error': 'Sentiment change failed, please try again.'}
+
+    return jsonify(result)
